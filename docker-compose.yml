@@ -43,6 +43,23 @@ services:
     volumes:
       - ./backend/logs:/app/logs
 
+  # FrontEnd React + Vite
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dlms-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - dlms-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
 networks:
   dlms-network:
     driver: bridge
