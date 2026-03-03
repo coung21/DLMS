@@ -1,0 +1,49 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+entity "roles" as roles {
+  + id : UUID <<PK>>
+  --
+  name : varchar(50) <<unique>>
+  created_at : timestamp
+}
+
+entity "users" as users {
+  + id : UUID <<PK>>
+  --
+  email : varchar(255) <<unique>>
+  hashed_password : text
+  full_name : varchar(255)>
+  is_active : boolean
+  role_id : UUID <<FK>>
+  created_at : timestamp
+}
+
+entity "categories" as categories {
+  + id : UUID <<PK>>
+  --
+  name : varchar(100) <<unique>>
+  description : text
+  created_at : timestamp
+}
+
+entity "documents" as documents {
+  + id : UUID <<PK>>
+  --
+  title : varchar(255)
+  description : text
+  file_path : text
+  file_type : varchar(50)
+  uploaded_by : UUID <<FK>>
+  category_id : UUID <<FK>>
+  created_at : timestamp
+}
+
+' Relationships
+
+roles ||--o{ users : has
+users ||--o{ documents : uploads
+categories ||--o{ documents : categorizes
+
+@enduml
