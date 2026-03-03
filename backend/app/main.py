@@ -13,11 +13,20 @@ from app.core.exceptions import (
 )
 from app.core.logging import setup_logging, logger
 
+from app.infrastructure.database.session import check_db_connection
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
     logger.info(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION} starting up…")
+    
+    # Check DB Connection
+    db_ok = await check_db_connection()
+    if not db_ok:
+        logger.error("🛑 Cannot start without Database connection.")
+        import sys
+        sys.exit(1)
+        
     yield
     logger.info("🛑 Shutting down…")
 

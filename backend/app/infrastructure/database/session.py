@@ -20,6 +20,20 @@ AsyncSessionFactory = async_sessionmaker(
 )
 
 
+from sqlalchemy import text
+from app.core.logging import logger
+
+async def check_db_connection() -> bool:
+    """Kiểm tra kết nối Database khi khởi động app."""
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        logger.info("✅ Database connection established successfully.")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Failed to connect to Database: {e}")
+        return False
+
 async def get_db() -> AsyncSession:
     """FastAPI dependency – yields an async DB session."""
     async with AsyncSessionFactory() as session:
