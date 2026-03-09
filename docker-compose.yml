@@ -43,6 +43,24 @@ services:
     volumes:
       - ./backend/logs:/app/logs
 
+  # Backend CI – dùng chung image, override CMD để chạy test/lint
+  backend-ci:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    entrypoint: [ "sh", "-c" ] # override CMD gốc (alembic + uvicorn)
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-dlms-db}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dlms-network
+    profiles:
+      - ci # Chỉ chạy khi gọi --profile ci, không ảnh hưởng docker compose up thường
+
   # FrontEnd React + Vite
   frontend:
     build:
