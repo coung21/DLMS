@@ -23,7 +23,8 @@ COPY --from=builder /install /usr/local
 
 # Copy source code
 COPY app/ ./app/
-COPY alembic.ini .
+COPY tests/ ./tests/
+COPY alembic.ini pytest.ini ./
 
 # Tạo user non-root để chạy app, và cấp quyền cho thư mục logs
 RUN addgroup --system dlms && adduser --system --ingroup dlms dlms \
