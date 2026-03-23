@@ -1,6 +1,5 @@
 """Integration tests cho POST /api/v1/auth/register – dùng DB thật."""
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
 from app.main import app
