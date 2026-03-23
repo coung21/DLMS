@@ -26,7 +26,7 @@ async def register(
     use_case: AuthUseCase = Depends(get_auth_use_case),
 ):
     try:
-        return await AuthUseCase.register(payload)
+        return await use_case.register(payload)
     except DuplicateEntityError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 
