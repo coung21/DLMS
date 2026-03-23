@@ -1,7 +1,9 @@
 """Async SQLAlchemy engine and session factory."""
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
+from app.core.logging import logger
 
 engine = create_async_engine(
     settings.DATABASE_URL,
@@ -19,9 +21,6 @@ AsyncSessionFactory = async_sessionmaker(
     autocommit=False,
 )
 
-
-from sqlalchemy import text
-from app.core.logging import logger
 
 async def check_db_connection() -> bool:
     """Kiểm tra kết nối Database khi khởi động app."""

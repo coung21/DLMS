@@ -1,6 +1,5 @@
 """Integration tests cho POST /api/v1/auth/register – dùng DB thật."""
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
 from app.main import app
@@ -9,19 +8,22 @@ from app.main import app
 BASE = "/api/v1/auth"
 
 
+import uuid
+
 @pytest.mark.asyncio
 async def test_register_success():
     """POST /register → 201, trả về user info."""
+    test_email = f"newuser_{uuid.uuid4().hex[:8]}@example.com"
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.post(f"{BASE}/register", json={
-            "email": "newuser@example.com",
+            "email": test_email,
             "password": "securepass123",
             "full_name": "New User",
         })
 
     assert resp.status_code == 201
     data = resp.json()
-    assert data["email"] == "newuser@example.com"
+    assert data["email"] == test_email
     assert data["full_name"] == "New User"
     assert "id" in data
     assert "hashed_password" not in data   # không leak password
@@ -30,8 +32,9 @@ async def test_register_success():
 @pytest.mark.asyncio
 async def test_register_duplicate_email_returns_409():
     """POST /register lần 2 cùng email → 409 Conflict."""
+    test_email = f"dupuser_{uuid.uuid4().hex[:8]}@example.com"
     payload = {
-        "email": "dupuser@example.com",
+        "email": test_email,
         "password": "securepass123",
         "full_name": "Dup User",
     }
@@ -40,7 +43,7 @@ async def test_register_duplicate_email_returns_409():
         resp = await client.post(f"{BASE}/register", json=payload)
 
     assert resp.status_code == 409
-    assert "dupuser@example.com" in resp.json()["detail"]
+    assert test_email in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
