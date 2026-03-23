@@ -34,10 +34,6 @@ async def register(
 @router.post("/login", response_model=TokenResponse, summary="Đăng nhập")
 async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     # TODO: implement LoginUseCase
-    try:
-        return await use_case.login(payload)
-    except DuplicateEntityError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented yet")
 
 
