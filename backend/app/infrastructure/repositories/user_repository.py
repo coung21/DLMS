@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.entities.user import User
 from app.domain.enums import UserRole, UserStatus
 from app.domain.repositories.user_repository import IUserRepository
-from app.infrastructure.database.models import UserModel
+from app.infrastructure.database.models import UserModel, RoleModel
 
 
 def _to_entity(model: UserModel) -> User:
@@ -16,7 +16,7 @@ def _to_entity(model: UserModel) -> User:
         email=model.email,
         hashed_password=model.hashed_password,
         full_name=model.full_name,
-        role=UserRole(model.role.name) if model.role else UserRole.MEMBER,
+        role=UserRole(model.role.name) if model.role else UserRole.STUDENT,
         status=UserStatus.ACTIVE if model.is_active else UserStatus.INACTIVE,
         created_at=model.created_at,
     )
@@ -41,12 +41,18 @@ class UserRepository(IUserRepository):
         return _to_entity(model) if model else None
 
     async def create(self, user: User) -> User:
+        role_result = await self._db.execute(
+            select(RoleModel).where(RoleModel.name == user.role.value)
+        )
+        role_model = role_result.scalar_one_or_none()
+
         model = UserModel(
             id=user.id,
             email=user.email,
             hashed_password=user.hashed_password,
             full_name=user.full_name,
             is_active=(user.status == UserStatus.ACTIVE),
+            role_id=role_model.id if role_model else None,
         )
         self._db.add(model)
         await self._db.flush()

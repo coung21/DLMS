@@ -35,7 +35,7 @@ class UserCreate(BaseModel):
     password: str = Field(min_length=8)
     full_name: str
     phone: str = ""
-    role: UserRole = UserRole.MEMBER
+    role: UserRole = UserRole.STUDENT
 
 
 class UserResponse(BaseModel):

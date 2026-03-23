@@ -15,7 +15,7 @@ class User:
     hashed_password: str = ""
     full_name: str = ""
     phone: str = ""
-    role: UserRole = UserRole.MEMBER
+    role: UserRole = UserRole.STUDENT
     status: UserStatus = UserStatus.ACTIVE
     avatar_url: str | None = None
     max_loans: int = 5
@@ -31,5 +31,9 @@ class User:
         return self.role == UserRole.ADMIN
 
     @property
-    def is_librarian(self) -> bool:
-        return self.role in (UserRole.ADMIN, UserRole.LIBRARIAN)
+    def is_student(self) -> bool:
+        return self.role == UserRole.STUDENT
+
+    @property
+    def is_teacher(self) -> bool:
+        return self.role == UserRole.TEACHER
