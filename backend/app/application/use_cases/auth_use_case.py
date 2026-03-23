@@ -1,9 +1,8 @@
-"""Auth use cases: register, login, refresh."""
-from app.application.schemas import RegisterRequest, UserResponse
-from app.core.exceptions import DuplicateEntityError
+from app.application.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from app.core.exceptions import AuthenticationError, DuplicateEntityError
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import IUserRepository
-from app.infrastructure.security.jwt import hash_password
+from app.infrastructure.security.jwt import create_access_token, create_refresh_token, hash_password, verify_password
 
 
 class AuthUseCase:
@@ -31,3 +30,21 @@ class AuthUseCase:
             status=created.status,
             created_at=created.created_at,
         )
+
+    async def login(self, data: LoginRequest) -> TokenResponse:
+        """Đăng nhập. Raise AuthenticationError nếu sai thông tin."""
+        user = await self._user_repo.get_by_email(data.email)
+        if not user:
+            raise AuthenticationError("Email hoặc mật khẩu không đúng.")
+
+        if not verify_password(data.password, user.hashed_password):
+            raise AuthenticationError("Email hoặc mật khẩu không đúng.")
+
+        access_token = create_access_token(user.id, user.role.value)
+        refresh_token = create_refresh_token(user.id)
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        )
+
