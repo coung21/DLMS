@@ -4,7 +4,6 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from app.core.exceptions import AuthorizationError
 from app.domain.enums import UserRole
 from app.infrastructure.security.jwt import decode_token
 
