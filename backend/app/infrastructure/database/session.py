@@ -1,8 +1,8 @@
 """Async SQLAlchemy engine and session factory."""
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
-from sqlalchemy import text
 from app.core.logging import logger
 
 engine = create_async_engine(
