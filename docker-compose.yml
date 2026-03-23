@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   # Database PostgreSQL
@@ -59,9 +60,6 @@ services:
       - dlms-network
     profiles:
       - ci # Chỉ chạy khi gọi --profile ci, không ảnh hưởng docker compose up thường
-    volumes:
-      - ./backend/tests:/app/tests
-      - ./backend/pytest.ini:/app/pytest.ini
 
   # FrontEnd React + Vite
   frontend:
