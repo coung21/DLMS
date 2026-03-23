@@ -4,9 +4,8 @@ from enum import Enum
 
 class UserRole(str, Enum):
     ADMIN = "admin"
-    LIBRARIAN = "librarian"
-    MEMBER = "member"
-    GUEST = "guest"
+    STUDENT = "student"
+    TEACHER = "teacher"
 
 
 class UserStatus(str, Enum):

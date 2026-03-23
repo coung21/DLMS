@@ -17,7 +17,7 @@ def make_user(**kwargs) -> User:
         email="test@example.com",
         hashed_password="$2b$hashed",
         full_name="Test User",
-        role=UserRole.MEMBER,
+        role=UserRole.STUDENT,
         status=UserStatus.ACTIVE,
         created_at=datetime.utcnow(),
     )
@@ -52,7 +52,7 @@ async def test_register_success(use_case, mock_repo):
     assert isinstance(result, UserResponse)
     assert result.email == "newuser@example.com"
     assert result.full_name == "New User"
-    assert result.role == UserRole.MEMBER
+    assert result.role == UserRole.STUDENT
     assert result.status == UserStatus.ACTIVE
     mock_repo.create.assert_awaited_once()
 
