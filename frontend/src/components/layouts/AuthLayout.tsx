@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 export const AuthLayout = () => {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen w-full bg-slate-50">
       {/* Visual Side */}
       <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-slate-900 justify-center items-center">
         <div className="absolute inset-0 z-0">

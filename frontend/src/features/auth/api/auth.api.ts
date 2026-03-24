@@ -1,5 +1,5 @@
 import { axiosInstance } from '../../../lib/axios';
-import { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../types';
+import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../types';
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   // FastAPI OAuth2PasswordRequestForm expects form-data

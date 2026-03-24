@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import type { User } from '../../features/auth/types';
 
@@ -13,14 +13,19 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     isAuthenticated: state.isAuthenticated,
     user: state.user,
   }));
+  const navigate = useNavigate();
   const location = useLocation();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location }, replace: true });
+    } else if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+      navigate('/unauthorized', { replace: true });
+    }
+  }, [isAuthenticated, user, allowedRoles, navigate, location]);
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />;
+  if (!isAuthenticated || (allowedRoles && user && !allowedRoles.includes(user.role))) {
+    return null;
   }
 
   return <>{children}</>;
