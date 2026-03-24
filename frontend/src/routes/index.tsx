@@ -1,9 +1,10 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { AuthLayout } from '../components/layouts/AuthLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ProtectedRoute } from '../components/guards/ProtectedRoute';
 import { UnauthorizedPage } from '../pages/error/UnauthorizedPage';
+import { NotFoundPage } from '../pages/error/NotFoundPage';
 import { useAuthStore } from '../store/authStore';
 import { LogOut, ShieldCheck, BookOpen, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -131,6 +132,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <NotFoundPage />,
   },
 ]);

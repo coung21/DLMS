@@ -40,7 +40,16 @@ export const LoginForm = () => {
       navigate(from, { replace: true });
     },
     onError: (error: any) => {
-      setErrorDetails(error.response?.data?.detail || 'Login failed. Please check your credentials.');
+      const detail = error.response?.data?.detail;
+      const message = typeof detail === 'string' 
+        ? detail 
+        : Array.isArray(detail) 
+          ? detail[0]?.msg || JSON.stringify(detail[0])
+          : typeof detail === 'object' && detail !== null
+            ? detail.msg || JSON.stringify(detail)
+            : 'Login failed. Please check your credentials.';
+      
+      setErrorDetails(message);
       // remove invalid partial auth
       useAuthStore.getState().logout();
     },

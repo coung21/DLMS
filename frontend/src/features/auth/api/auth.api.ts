@@ -2,16 +2,7 @@ import { axiosInstance } from '../../../lib/axios';
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../types';
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  // FastAPI OAuth2PasswordRequestForm expects form-data
-  const formData = new FormData();
-  formData.append('username', credentials.email);
-  formData.append('password', credentials.password);
-
-  const response = await axiosInstance.post<AuthResponse>('/auth/login', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await axiosInstance.post<AuthResponse>('/auth/login', credentials);
   return response.data;
 };
 

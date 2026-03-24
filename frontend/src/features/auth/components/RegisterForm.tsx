@@ -33,7 +33,16 @@ export const RegisterForm = () => {
       navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     },
     onError: (error: any) => {
-      setErrorDetails(error.response?.data?.detail || 'Registration failed. Please try again.');
+      const detail = error.response?.data?.detail;
+      const message = typeof detail === 'string' 
+        ? detail 
+        : Array.isArray(detail) 
+          ? detail[0]?.msg || JSON.stringify(detail[0])
+          : typeof detail === 'object' && detail !== null
+            ? detail.msg || JSON.stringify(detail)
+            : 'Registration failed. Please try again.';
+      
+      setErrorDetails(message);
     },
   });
 
