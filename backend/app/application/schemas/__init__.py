@@ -1,1 +1,1 @@
-from .document import DocumentResponse, DocumentListResponse
+from .document import DocumentResponse as DocumentResponse, DocumentListResponse as DocumentListResponse

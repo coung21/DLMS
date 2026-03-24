@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.dependencies.auth import get_current_user
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.document_repository_impl import DocumentRepositoryImpl
 from app.application.use_cases.get_documents_use_case import GetDocumentsUseCase
