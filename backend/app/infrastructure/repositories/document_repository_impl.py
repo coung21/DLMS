@@ -37,6 +37,11 @@ class DocumentRepositoryImpl(DocumentRepository):
         models = result.scalars().all()
         return [_to_entity(model) for model in models]
 
+    async def count_all(self) -> int:
+        from sqlalchemy import func
+        result = await self._db.execute(select(func.count()).select_from(DocumentModel))
+        return result.scalar() or 0
+
     async def find_by_id(self, document_id: UUID) -> Document | None:
         result = await self._db.execute(
             select(DocumentModel).where(DocumentModel.id == document_id)
