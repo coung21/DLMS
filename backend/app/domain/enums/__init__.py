@@ -15,3 +15,17 @@ class UserStatus(str, Enum):
 
 
 # Thêm DocumentType, DocumentStatus, LoanStatus, NotificationType... khi triển khai
+
+
+class DocumentStatus(str, Enum):
+    AVAILABLE = "available"
+    ARCHIVED = "archived"
+    DELETED = "deleted"
+
+
+class DocumentType(str, Enum):
+    PDF = "pdf"
+    DOCX = "docx"
+    IMAGE = "image"
+    VIDEO = "video"
+    OTHER = "other"
