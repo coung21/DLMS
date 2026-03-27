@@ -8,9 +8,8 @@ class GetDocumentsUseCase:
 
     async def execute(self, skip: int = 0, limit: int = 100) -> DocumentListResponse:
         documents = await self._document_repo.find_all(skip=skip, limit=limit)
-        
-        # In a real scenario, you'd also get the total count
-        # For now, let's just return the list and its length
+        total = await self._document_repo.count_all()
+
         items = [
             DocumentResponse(
                 id=doc.id,
@@ -29,7 +28,7 @@ class GetDocumentsUseCase:
 
         return DocumentListResponse(
             items=items,
-            total=len(items), # Simplified total count
+            total=total,
             skip=skip,
             limit=limit,
         )

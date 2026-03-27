@@ -15,6 +15,11 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
+    async def count_all(self) -> int:
+        """Count total documents."""
+        pass
+
+    @abstractmethod
     async def find_by_id(self, document_id: UUID) -> Document | None:
         """Fetch a document by ID."""
         pass
