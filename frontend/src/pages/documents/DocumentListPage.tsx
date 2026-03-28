@@ -13,6 +13,8 @@ import {
   RefreshCw,
   ShieldCheck,
   Video,
+  Search,
+  Filter,
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -273,17 +275,39 @@ export const DocumentListPage = () => {
                 </p>
               </div>
 
-              <button
-                onClick={() => query.refetch()}
-                className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900"
-              >
-                {query.isFetching ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Refresh
-              </button>
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto mt-4 sm:mt-0 items-center justify-start sm:justify-end">
+                <div className="relative flex-1 sm:flex-none sm:w-64 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search documents..."
+                    className="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all text-sm font-medium"
+                  />
+                </div>
+                <button className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900">
+                  <Filter className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Filters</span>
+                </button>
+                <button
+                  onClick={() => query.refetch()}
+                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900"
+                >
+                  {query.isFetching ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+              {['All Categories', 'Textbooks', 'Fiction', 'Science', 'History', 'Programming', 'Art'].map(filter => (
+                <span key={filter} className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${filter === 'All Categories' ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}>
+                  {filter}
+                </span>
+              ))}
             </div>
 
             {query.isLoading ? (
