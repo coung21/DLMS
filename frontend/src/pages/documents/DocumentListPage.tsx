@@ -431,7 +431,7 @@ export const DocumentListPage = () => {
                   >
                     <span className="inline-flex items-center">
                       <BookOpen className="mr-3 h-4 w-4" />
-                      Teacher portal
+                      Teacher upload
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>

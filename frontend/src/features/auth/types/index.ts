@@ -22,6 +22,6 @@ export type RegisterCredentials = {
   email: string;
   password: string;
   full_name: string;
-  role: 'student' | 'teacher';
+  role?: 'student' | 'teacher';
 };
 

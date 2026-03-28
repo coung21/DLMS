@@ -12,7 +12,9 @@ import { register as registerApi } from '../api/auth.api';
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  role: z.enum(['student', 'teacher']),
+  role: z.enum(['student', 'teacher'], {
+    message: 'Please select a valid role',
+  }),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -44,7 +46,7 @@ export const RegisterForm = () => {
     onSuccess: (data) => {
       const message =
         data.role === 'teacher'
-          ? 'Teacher account created successfully. Please login.'
+          ? 'Registration successful! Teacher accounts require admin approval before login.'
           : 'Registration successful! Please login.';
 
       navigate('/login', { state: { message } });
@@ -147,9 +149,9 @@ export const RegisterForm = () => {
             </p>
           )}
           {selectedRole === 'teacher' && (
-            <p className="mt-1.5 flex items-center gap-1 animate-in fade-in text-xs font-medium text-emerald-600">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Teacher accounts are created with teacher access.
+            <p className="mt-1.5 flex items-center gap-1 animate-in fade-in text-xs font-medium text-amber-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Teacher accounts require admin approval before login.
             </p>
           )}
         </div>

@@ -2,7 +2,14 @@ export type DocumentType = 'pdf' | 'docx' | 'excel' | 'text' | 'image' | 'video'
 
 export type DocumentStatus = 'available' | 'archived' | 'deleted';
 
-export type DocumentItem = {
+export type UploadDocumentPayload = {
+  file: File;
+  title: string;
+  description?: string;
+  category_id?: string;
+};
+
+export type Document = {
   id: string;
   title: string;
   description: string;
@@ -14,6 +21,8 @@ export type DocumentItem = {
   created_at: string;
   updated_at: string;
 };
+
+export type DocumentItem = Document;
 
 export type DocumentListResponse = {
   items: DocumentItem[];

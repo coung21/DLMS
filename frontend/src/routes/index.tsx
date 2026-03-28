@@ -8,7 +8,7 @@ import { RegisterPage } from '../pages/auth/RegisterPage';
 import { DocumentListPage } from '../pages/documents/DocumentListPage';
 import { NotFoundPage } from '../pages/error/NotFoundPage';
 import { UnauthorizedPage } from '../pages/error/UnauthorizedPage';
-import { TeacherPortalPage } from '../pages/teacher/TeacherPortalPage';
+import { TeacherUploadPage } from '../pages/teacher/TeacherUploadPage';
 
 export const router = createBrowserRouter([
   {
@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
     path: '/teacher',
     element: (
       <ProtectedRoute allowedRoles={['admin', 'teacher']}>
-        <TeacherPortalPage />
+        <TeacherUploadPage />
       </ProtectedRoute>
     ),
   },
