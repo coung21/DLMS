@@ -9,6 +9,9 @@ from app.infrastructure.services.storage.minio_storage_service import MinioStora
 from app.application.use_cases.get_documents_use_case import GetDocumentsUseCase
 from app.application.use_cases.upload_document_use_case import UploadDocumentUseCase
 from app.application.schemas.document import DocumentListResponse, DocumentResponse
+from app.domain.enums import UserRole
+from app.api.v1.dependencies.auth import require_roles
+
 
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -33,10 +36,6 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_EXTENSIONS = {
     "pdf", "docx", "doc", "xlsx", "xls", "jpg", "jpeg", "png", "txt"
 }
-
-
-from app.domain.enums import UserRole
-from app.api.v1.dependencies.auth import require_roles
 
 
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
