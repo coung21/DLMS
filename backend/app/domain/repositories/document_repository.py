@@ -23,3 +23,8 @@ class DocumentRepository(ABC):
     async def find_by_id(self, document_id: UUID) -> Document | None:
         """Fetch a document by ID."""
         pass
+
+    @abstractmethod
+    async def save(self, document: Document) -> Document:
+        """Save a new document."""
+        pass
