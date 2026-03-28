@@ -35,6 +35,10 @@ ALLOWED_EXTENSIONS = {
 }
 
 
+from app.domain.enums import UserRole
+from app.api.v1.dependencies.auth import require_roles
+
+
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile = File(...),
@@ -42,7 +46,7 @@ async def upload_document(
     description: Optional[str] = Form(None),
     category_id: Optional[UUID] = Form(None),
     db: AsyncSession = Depends(get_db),
-    # current_user = Depends(get_current_user), # Optional: Add authentication
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN, UserRole.TEACHER)),
 ):
     """
     Upload a document and save its metadata.
@@ -87,5 +91,5 @@ async def upload_document(
         description=description,
         category_id=category_id,
         content_type=file.content_type,
-        uploaded_by=None, # current_user.id if authenticated
+        uploaded_by=current_user_id,
     )
