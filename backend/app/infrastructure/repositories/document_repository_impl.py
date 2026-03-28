@@ -48,3 +48,18 @@ class DocumentRepositoryImpl(DocumentRepository):
         )
         model = result.scalar_one_or_none()
         return _to_entity(model) if model else None
+
+    async def save(self, document: Document) -> Document:
+        model = DocumentModel(
+            id=document.id,
+            title=document.title,
+            description=document.description,
+            file_path=document.file_path,
+            file_type=document.file_type.value if document.file_type else None,
+            uploaded_by=document.uploaded_by,
+            category_id=document.category_id,
+        )
+        self._db.add(model)
+        await self._db.commit()
+        await self._db.refresh(model)
+        return _to_entity(model)
