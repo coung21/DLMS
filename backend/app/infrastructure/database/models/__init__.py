@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     Boolean, Column, DateTime, ForeignKey,
-    String, Text,
+    String, Text, Integer
 )
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -58,6 +58,8 @@ class DocumentModel(Base):
     description = Column(Text, default="")
     file_path = Column(Text, nullable=True)
     file_type = Column(String(50), nullable=True)
+    file_size = Column(Integer, default=0)
+    original_file_name = Column(String(255), nullable=True)
     uploaded_by = Column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     category_id = Column(PGUUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
