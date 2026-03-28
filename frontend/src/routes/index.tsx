@@ -10,6 +10,7 @@ import { NotFoundPage } from '../pages/error/NotFoundPage';
 import { UnauthorizedPage } from '../pages/error/UnauthorizedPage';
 import { TeacherUploadPage } from '../pages/teacher/TeacherUploadPage';
 import { UserManagementPage } from '../features/users/components/UserManagementPage';
+import { CategoryManagementPage } from '../features/categories/components/CategoryManagementPage';
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path: 'users',
         element: <UserManagementPage />,
+      },
+      {
+        path: 'categories',
+        element: <CategoryManagementPage />,
       },
     ],
   },

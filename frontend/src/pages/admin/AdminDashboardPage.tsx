@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShieldCheck, Users } from 'lucide-react';
+import { LayoutDashboard, ShieldCheck, Users, FolderTree } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 
 export const AdminDashboardPage = () => (
@@ -23,6 +23,19 @@ export const AdminDashboardPage = () => (
           <div className="ml-4">
             <h3 className="font-bold text-slate-900 text-lg">User Management</h3>
             <p className="text-sm text-slate-500">Manage user accounts, roles, and status.</p>
+          </div>
+        </Link>
+
+        <Link 
+          to="/admin/categories" 
+          className="flex items-center p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all group"
+        >
+          <div className="p-3 bg-emerald-100 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <FolderTree className="w-6 h-6" />
+          </div>
+          <div className="ml-4">
+            <h3 className="font-bold text-slate-900 text-lg">Category Management</h3>
+            <p className="text-sm text-slate-500">Create and organize document categories.</p>
           </div>
         </Link>
       </div>
