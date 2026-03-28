@@ -5,6 +5,9 @@ from app.domain.repositories.user_repository import IUserRepository
 from app.infrastructure.security.jwt import create_access_token, create_refresh_token, hash_password, verify_password
 
 
+from app.domain.enums import UserRole, UserStatus
+
+
 class AuthUseCase:
     def __init__(self, user_repo: IUserRepository) -> None:
         self._user_repo = user_repo
@@ -15,10 +18,15 @@ class AuthUseCase:
         if existing:
             raise DuplicateEntityError(f"Email '{data.email}' đã được đăng ký.")
 
+        # Phân quyền: Teacher cần admin duyệt (status INACTIVE)
+        status = UserStatus.INACTIVE if data.role == UserRole.TEACHER else UserStatus.ACTIVE
+
         user = User(
             email=data.email,
             hashed_password=hash_password(data.password),
             full_name=data.full_name,
+            role=data.role,
+            status=status,
         )
         created = await self._user_repo.create(user)
 
@@ -39,6 +47,9 @@ class AuthUseCase:
 
         if not verify_password(data.password, user.hashed_password):
             raise AuthenticationError("Email hoặc mật khẩu không đúng.")
+
+        if user.status != UserStatus.ACTIVE:
+            raise AuthenticationError("Tài khoản chưa được kích hoạt hoặc đã bị khóa.")
 
         access_token = create_access_token(user.id, user.role.value)
         refresh_token = create_refresh_token(user.id)
