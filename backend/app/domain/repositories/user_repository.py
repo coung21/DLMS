@@ -23,3 +23,6 @@ class IUserRepository(ABC):
 
     @abstractmethod
     async def list_all(self, skip: int = 0, limit: int = 20) -> list[User]: ...
+
+    @abstractmethod
+    async def count_all(self) -> int: ...

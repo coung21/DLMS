@@ -86,3 +86,8 @@ class UserRepository(IUserRepository):
             select(UserModel).offset(skip).limit(limit)
         )
         return [_to_entity(m) for m in result.scalars().all()]
+
+    async def count_all(self) -> int:
+        from sqlalchemy import func
+        result = await self._db.execute(select(func.count(UserModel.id)))
+        return result.scalar() or 0
