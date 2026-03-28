@@ -21,7 +21,7 @@ class AuthUseCase:
         """Create a new account or raise DuplicateEntityError if email exists."""
         existing = await self._user_repo.get_by_email(data.email)
         if existing:
-            raise DuplicateEntityError(f"Email '{data.email}' da duoc dang ky.")
+            raise DuplicateEntityError(f"Email '{data.email}' đã được đăng ký.")
 
         # Phân quyền: Teacher cần admin duyệt (status INACTIVE)
         status = UserStatus.INACTIVE if data.role == UserRole.TEACHER else UserStatus.ACTIVE
@@ -48,10 +48,10 @@ class AuthUseCase:
         """Authenticate a user or raise AuthenticationError on failure."""
         user = await self._user_repo.get_by_email(data.email)
         if not user:
-            raise AuthenticationError("Email hoac mat khau khong dung.")
+            raise AuthenticationError("Email hoặc mật khẩu không đúng.")
 
         if not verify_password(data.password, user.hashed_password):
-            raise AuthenticationError("Email hoac mat khau khong dung.")
+            raise AuthenticationError("Email hoặc mật khẩu không đúng.")
 
         if user.status != UserStatus.ACTIVE:
             raise AuthenticationError("Tài khoản chưa được kích hoạt hoặc đã bị khóa.")
