@@ -15,6 +15,8 @@ class Document:
     description: str = ""
     file_path: str | None = None
     file_type: DocumentType = DocumentType.PDF
+    file_size: int = 0
+    original_file_name: str | None = None
     status: DocumentStatus = DocumentStatus.AVAILABLE
     uploaded_by: UUID | None = None
     category_id: UUID | None = None
