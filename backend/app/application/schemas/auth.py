@@ -16,6 +16,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, description="Tối thiểu 8 ký tự")
     full_name: str = Field(min_length=2, max_length=255)
+    role: UserRole = UserRole.STUDENT
 
 
 class TokenResponse(BaseModel):

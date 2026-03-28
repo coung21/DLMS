@@ -4,13 +4,16 @@ import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { register as registerApi } from '../api/auth.api';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Users } from 'lucide-react';
 import { useState } from 'react';
 
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  role: z.enum(['student', 'teacher'], {
+    message: 'Please select a valid role',
+  }),
 });
 
 type RegisterSchema = z.infer<typeof registerSchema>;
@@ -19,20 +22,29 @@ export const RegisterForm = () => {
   const navigate = useNavigate();
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterSchema>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'student',
+    }
   });
+
+  const selectedRole = watch('role');
 
   const mutation = useMutation({
     mutationFn: async (data: RegisterSchema) => {
-      const { ...credentials } = data;
-      return await registerApi(credentials);
+      return await registerApi(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Chuyển hướng về login sau khi đăng ký thành công
-      navigate('/login', { state: { message: 'Registration successful! Please login.' } });
+      const message = data.role === 'teacher' 
+        ? 'Registration successful! Teacher accounts require admin approval before login.'
+        : 'Registration successful! Please login.';
+      
+      navigate('/login', { state: { message } });
     },
     onError: (error: any) => {
+// ... existing error handling ...
       const detail = error.response?.data?.detail;
       const message = typeof detail === 'string' 
         ? detail 
@@ -60,6 +72,7 @@ export const RegisterForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+// ... existing full_name field ...
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
               <User className="h-5 w-5" />
@@ -76,6 +89,7 @@ export const RegisterForm = () => {
 
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
+// ... existing email field ...
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
               <Mail className="h-5 w-5" />
@@ -91,7 +105,34 @@ export const RegisterForm = () => {
         </div>
 
         <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">You are a...</label>
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
+              <Users className="h-5 w-5" />
+            </div>
+            <select
+              {...register('role')}
+              className={`block w-full pl-11 pr-3 py-2.5 border ${errors.role ? 'border-red-300 focus:ring-red-400' : 'border-slate-200 focus:ring-slate-900/10'} rounded-xl focus:outline-none focus:ring-4 transition-all bg-white font-medium text-slate-900 appearance-none`}
+            >
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
+          {errors.role && <p className="mt-1.5 text-sm text-red-500 font-medium animate-in fade-in">{errors.role.message}</p>}
+          {selectedRole === 'teacher' && (
+            <p className="mt-1.5 text-xs text-amber-600 font-medium flex items-center gap-1 animate-in fade-in">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              Teacher accounts require admin approval before login.
+            </p>
+          )}
+        </div>
+
+        <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+// ... existing password field ...
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
               <Lock className="h-5 w-5" />
