@@ -7,7 +7,7 @@ import { ProtectedRoute } from '../components/guards/ProtectedRoute';
 import { UnauthorizedPage } from '../pages/error/UnauthorizedPage';
 import { NotFoundPage } from '../pages/error/NotFoundPage';
 import { useAuthStore } from '../store/authStore';
-import { LogOut, ShieldCheck, BookOpen, LayoutDashboard } from 'lucide-react';
+import { LogOut, ShieldCheck, BookOpen, LayoutDashboard, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -16,13 +16,38 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-lg w-full text-center">
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl w-full text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-800 mb-6 text-2xl font-bold">
           {user?.full_name?.charAt(0) || 'U'}
         </div>
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome, {user?.full_name || 'User'}!</h1>
-        <p className="text-slate-500 mb-8">You have successfully authenticated into the DLMS system.</p>
+        <p className="text-slate-500 mb-6">Explore the digital library catalog.</p>
         
+        {/* Mock Filter UI */}
+        <div className="w-full mb-8 text-left">
+          <div className="flex gap-3 w-full mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search books, authors, or topics..."
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow text-sm"
+              />
+            </div>
+            <button className="flex items-center justify-center px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-colors">
+              <Filter className="w-5 h-5 sm:mr-2" />
+              <span className="font-medium hidden sm:inline">Filters</span>
+            </button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {['All Categories', 'Textbooks', 'Fiction', 'Science', 'History'].map(filter => (
+              <span key={filter} className={`px-4 py-2 text-sm font-medium rounded-full cursor-pointer transition-colors whitespace-nowrap ${filter === 'All Categories' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                {filter}
+              </span>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-4 text-left mb-8">
           <div className="p-4 rounded-xl bg-slate-50">
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Role</p>
