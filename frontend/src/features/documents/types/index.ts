@@ -1,3 +1,7 @@
+export type DocumentType = 'pdf' | 'docx' | 'excel' | 'text' | 'image' | 'video' | 'other';
+
+export type DocumentStatus = 'available' | 'archived' | 'deleted';
+
 export type UploadDocumentPayload = {
   file: File;
   title: string;
@@ -10,10 +14,19 @@ export type Document = {
   title: string;
   description: string;
   file_path: string | null;
-  file_type: 'pdf' | 'docx' | 'excel' | 'text' | 'image' | 'video' | 'other';
-  status: 'available' | 'archived' | 'deleted';
+  file_type: DocumentType;
+  status: DocumentStatus;
   uploaded_by: string | null;
   category_id: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type DocumentItem = Document;
+
+export type DocumentListResponse = {
+  items: DocumentItem[];
+  total: number;
+  skip: number;
+  limit: number;
 };

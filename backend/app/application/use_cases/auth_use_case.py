@@ -2,7 +2,12 @@ from app.application.schemas import LoginRequest, RegisterRequest, TokenResponse
 from app.core.exceptions import AuthenticationError, DuplicateEntityError
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import IUserRepository
-from app.infrastructure.security.jwt import create_access_token, create_refresh_token, hash_password, verify_password
+from app.infrastructure.security.jwt import (
+    create_access_token,
+    create_refresh_token,
+    hash_password,
+    verify_password,
+)
 
 
 from app.domain.enums import UserRole, UserStatus
@@ -13,10 +18,10 @@ class AuthUseCase:
         self._user_repo = user_repo
 
     async def register(self, data: RegisterRequest) -> UserResponse:
-        """Tạo tài khoản mới. Raise DuplicateEntityError nếu email đã tồn tại."""
+        """Create a new account or raise DuplicateEntityError if email exists."""
         existing = await self._user_repo.get_by_email(data.email)
         if existing:
-            raise DuplicateEntityError(f"Email '{data.email}' đã được đăng ký.")
+            raise DuplicateEntityError(f"Email '{data.email}' da duoc dang ky.")
 
         # Phân quyền: Teacher cần admin duyệt (status INACTIVE)
         status = UserStatus.INACTIVE if data.role == UserRole.TEACHER else UserStatus.ACTIVE
@@ -40,13 +45,13 @@ class AuthUseCase:
         )
 
     async def login(self, data: LoginRequest) -> TokenResponse:
-        """Đăng nhập. Raise AuthenticationError nếu sai thông tin."""
+        """Authenticate a user or raise AuthenticationError on failure."""
         user = await self._user_repo.get_by_email(data.email)
         if not user:
-            raise AuthenticationError("Email hoặc mật khẩu không đúng.")
+            raise AuthenticationError("Email hoac mat khau khong dung.")
 
         if not verify_password(data.password, user.hashed_password):
-            raise AuthenticationError("Email hoặc mật khẩu không đúng.")
+            raise AuthenticationError("Email hoac mat khau khong dung.")
 
         if user.status != UserStatus.ACTIVE:
             raise AuthenticationError("Tài khoản chưa được kích hoạt hoặc đã bị khóa.")
@@ -58,4 +63,3 @@ class AuthUseCase:
             access_token=access_token,
             refresh_token=refresh_token,
         )
-
