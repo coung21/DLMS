@@ -1,5 +1,4 @@
 from uuid import UUID
-from typing import List
 from app.domain.repositories.category_repository import ICategoryRepository
 from app.domain.entities.category import Category
 from app.application.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse, CategoryListResponse
