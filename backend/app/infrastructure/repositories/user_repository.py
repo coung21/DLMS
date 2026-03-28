@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.domain.entities.user import User
 from app.domain.enums import UserRole, UserStatus
@@ -28,14 +29,18 @@ class UserRepository(IUserRepository):
 
     async def get_by_id(self, user_id: UUID) -> User | None:
         result = await self._db.execute(
-            select(UserModel).where(UserModel.id == user_id)
+            select(UserModel)
+            .options(joinedload(UserModel.role))
+            .where(UserModel.id == user_id)
         )
         model = result.scalar_one_or_none()
         return _to_entity(model) if model else None
 
     async def get_by_email(self, email: str) -> User | None:
         result = await self._db.execute(
-            select(UserModel).where(UserModel.email == email)
+            select(UserModel)
+            .options(joinedload(UserModel.role))
+            .where(UserModel.email == email)
         )
         model = result.scalar_one_or_none()
         return _to_entity(model) if model else None
@@ -62,7 +67,7 @@ class UserRepository(IUserRepository):
         )
         self._db.add(model)
         await self._db.flush()
-        await self._db.refresh(model)
+        await self._db.refresh(model, attribute_names=["role"])
         return _to_entity(model)
 
     async def update(self, user: User) -> User:
@@ -72,7 +77,7 @@ class UserRepository(IUserRepository):
         model.full_name = user.full_name
         model.is_active = user.status == UserStatus.ACTIVE
         await self._db.flush()
-        await self._db.refresh(model)
+        await self._db.refresh(model, attribute_names=["role"])
         return _to_entity(model)
 
     async def delete(self, user_id: UUID) -> None:
@@ -83,6 +88,14 @@ class UserRepository(IUserRepository):
 
     async def list_all(self, skip: int = 0, limit: int = 20) -> list[User]:
         result = await self._db.execute(
-            select(UserModel).offset(skip).limit(limit)
+            select(UserModel)
+            .options(joinedload(UserModel.role))
+            .offset(skip)
+            .limit(limit)
         )
         return [_to_entity(m) for m in result.scalars().all()]
+
+    async def count_all(self) -> int:
+        from sqlalchemy import func
+        result = await self._db.execute(select(func.count(UserModel.id)))
+        return result.scalar() or 0

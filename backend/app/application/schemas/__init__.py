@@ -5,6 +5,8 @@ from .auth import (
     RefreshTokenRequest as RefreshTokenRequest,
     UserCreate as UserCreate,
     UserResponse as UserResponse,
+    UserUpdate as UserUpdate,
+    UserListResponse as UserListResponse,
 )
 from .document import (
     DocumentResponse as DocumentResponse,

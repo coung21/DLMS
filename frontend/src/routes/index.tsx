@@ -9,6 +9,7 @@ import { DocumentListPage } from '../pages/documents/DocumentListPage';
 import { NotFoundPage } from '../pages/error/NotFoundPage';
 import { UnauthorizedPage } from '../pages/error/UnauthorizedPage';
 import { TeacherUploadPage } from '../pages/teacher/TeacherUploadPage';
+import { UserManagementPage } from '../features/users/components/UserManagementPage';
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,12 @@ export const router = createBrowserRouter([
         <AdminDashboardPage />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        path: 'users',
+        element: <UserManagementPage />,
+      },
+    ],
   },
   {
     path: '/teacher',
