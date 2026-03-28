@@ -1,12 +1,12 @@
 """Auth schemas."""
 from datetime import datetime
 from uuid import UUID
+
 from pydantic import BaseModel, EmailStr, Field
 
 from app.domain.enums import UserRole, UserStatus
 
 
-# --------------- Auth Schemas (mẫu) ---------------
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -14,8 +14,9 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8, description="Tối thiểu 8 ký tự")
+    password: str = Field(min_length=8, description="Minimum 8 characters")
     full_name: str = Field(min_length=2, max_length=255)
+    role: UserRole = UserRole.STUDENT
 
 
 class TokenResponse(BaseModel):
@@ -28,7 +29,6 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
-# --------------- User Schemas (mẫu) ---------------
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)

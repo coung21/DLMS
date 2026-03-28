@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.entities.user import User
 from app.domain.enums import UserRole, UserStatus
 from app.domain.repositories.user_repository import IUserRepository
-from app.infrastructure.database.models import UserModel, RoleModel
+from app.infrastructure.database.models import RoleModel, UserModel
 
 
 def _to_entity(model: UserModel) -> User:
@@ -46,13 +46,19 @@ class UserRepository(IUserRepository):
         )
         role_model = role_result.scalar_one_or_none()
 
+        # Create the role lazily so student/teacher registration works on a fresh DB.
+        if role_model is None:
+            role_model = RoleModel(name=user.role.value)
+            self._db.add(role_model)
+            await self._db.flush()
+
         model = UserModel(
             id=user.id,
             email=user.email,
             hashed_password=user.hashed_password,
             full_name=user.full_name,
             is_active=(user.status == UserStatus.ACTIVE),
-            role_id=role_model.id if role_model else None,
+            role_id=role_model.id,
         )
         self._db.add(model)
         await self._db.flush()

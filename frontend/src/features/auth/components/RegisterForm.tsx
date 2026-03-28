@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Lock, Mail, User } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { Loader2, Lock, Mail, User, Users } from 'lucide-react';
+import { useForm, useWatch } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
@@ -12,6 +12,7 @@ import { register as registerApi } from '../api/auth.api';
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
+  role: z.enum(['student', 'teacher']),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -22,17 +23,31 @@ export const RegisterForm = () => {
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'student',
+    },
+  });
+
+  const selectedRole = useWatch({
+    control,
+    name: 'role',
   });
 
   const mutation = useMutation({
     mutationFn: async (data: RegisterSchema) => registerApi(data),
-    onSuccess: () => {
-      navigate('/login', { state: { message: 'Registration successful! Please login.' } });
+    onSuccess: (data) => {
+      const message =
+        data.role === 'teacher'
+          ? 'Teacher account created successfully. Please login.'
+          : 'Registration successful! Please login.';
+
+      navigate('/login', { state: { message } });
     },
     onError: (error: unknown) => {
       setErrorDetails(getApiErrorMessage(error, 'Registration failed. Please try again.'));
@@ -99,6 +114,42 @@ export const RegisterForm = () => {
           {errors.email && (
             <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
               {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">You are a...</label>
+          <div className="group relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
+              <Users className="h-5 w-5" />
+            </div>
+            <select
+              {...register('role')}
+              className={`block w-full appearance-none rounded-xl border bg-white py-2.5 pl-11 pr-10 font-medium text-slate-900 transition-all focus:outline-none focus:ring-4 ${
+                errors.role
+                  ? 'border-red-300 focus:ring-red-400'
+                  : 'border-slate-200 focus:ring-slate-900/10'
+              }`}
+            >
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+          {errors.role && (
+            <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
+              {errors.role.message}
+            </p>
+          )}
+          {selectedRole === 'teacher' && (
+            <p className="mt-1.5 flex items-center gap-1 animate-in fade-in text-xs font-medium text-emerald-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Teacher accounts are created with teacher access.
             </p>
           )}
         </div>
