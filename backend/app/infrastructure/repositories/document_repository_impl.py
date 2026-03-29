@@ -30,16 +30,59 @@ class DocumentRepositoryImpl(DocumentRepository):
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
-    async def find_all(self, skip: int = 0, limit: int = 100) -> List[Document]:
-        result = await self._db.execute(
-            select(DocumentModel).offset(skip).limit(limit)
-        )
+    async def find_all(self, skip: int = 0, limit: int = 100, category_id: UUID | None = None, search: str | None = None, sort_by: str | None = None) -> List[Document]:
+        from sqlalchemy import or_, desc, asc
+        stmt = select(DocumentModel)
+
+        if category_id:
+            stmt = stmt.where(DocumentModel.category_id == category_id)
+        
+        if search:
+            search_term = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    DocumentModel.title.ilike(search_term),
+                    DocumentModel.description.ilike(search_term)
+                )
+            )
+
+        if sort_by:
+            if sort_by == "created_at_desc":
+                stmt = stmt.order_by(desc(DocumentModel.created_at))
+            elif sort_by == "created_at_asc":
+                stmt = stmt.order_by(asc(DocumentModel.created_at))
+            elif sort_by == "title_asc":
+                stmt = stmt.order_by(asc(DocumentModel.title))
+            elif sort_by == "title_desc":
+                stmt = stmt.order_by(desc(DocumentModel.title))
+            else:
+                stmt = stmt.order_by(desc(DocumentModel.created_at))
+        else:
+            stmt = stmt.order_by(desc(DocumentModel.created_at))
+
+        stmt = stmt.offset(skip).limit(limit)
+
+        result = await self._db.execute(stmt)
         models = result.scalars().all()
         return [_to_entity(model) for model in models]
 
-    async def count_all(self) -> int:
-        from sqlalchemy import func
-        result = await self._db.execute(select(func.count()).select_from(DocumentModel))
+    async def count_all(self, category_id: UUID | None = None, search: str | None = None) -> int:
+        from sqlalchemy import func, or_
+        stmt = select(func.count()).select_from(DocumentModel)
+
+        if category_id:
+            stmt = stmt.where(DocumentModel.category_id == category_id)
+        
+        if search:
+            search_term = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    DocumentModel.title.ilike(search_term),
+                    DocumentModel.description.ilike(search_term)
+                )
+            )
+
+        result = await self._db.execute(stmt)
         return result.scalar() or 0
 
     async def find_by_id(self, document_id: UUID) -> Document | None:

@@ -14,12 +14,12 @@ import {
   ShieldCheck,
   Video,
   Search,
-  Filter,
 } from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { getDocuments } from '../../features/documents/api/documents.api';
+import { getCategories } from '../../features/categories/api/categories.api';
 import type {
   DocumentItem,
   DocumentStatus,
@@ -141,42 +141,43 @@ export const DocumentListPage = () => {
   const logout = useAuthStore((state) => state.logout);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All Categories');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<string>('created_at_desc');
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const rawPage = Number(searchParams.get('page') ?? '1');
   const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
   const skip = (page - 1) * PAGE_SIZE;
 
+  // Categories query
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
+  const categories = categoriesQuery.data?.items ?? [];
+
   const query = useQuery({
-    queryKey: ['documents', page],
-    queryFn: () => getDocuments({ skip, limit: PAGE_SIZE }),
+    queryKey: ['documents', page, debouncedSearchQuery, activeCategoryId, sortBy],
+    queryFn: () => getDocuments({ 
+      skip, 
+      limit: PAGE_SIZE, 
+      search: debouncedSearchQuery || undefined, 
+      categoryId: activeCategoryId, 
+      sortBy 
+    }),
     placeholderData: keepPreviousData,
   });
 
-  const allDocuments = query.data?.items ?? [];
-  
-  // Apply Mock Filters
-  const documents = useMemo(() => {
-    return allDocuments.filter(doc => {
-      const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      let matchesCategory = true;
-      if (activeCategory !== 'All Categories') {
-        // Map mock category to file_type roughly for demonstration
-        if (activeCategory === 'PDF') matchesCategory = doc.file_type === 'pdf';
-        if (activeCategory === 'DOCX') matchesCategory = doc.file_type === 'docx';
-        if (activeCategory === 'Image') matchesCategory = doc.file_type === 'image';
-        if (activeCategory === 'Video') matchesCategory = doc.file_type === 'video';
-      }
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [allDocuments, searchQuery, activeCategory]);
-
+  const documents = query.data?.items ?? [];
   const totalDocuments = query.data?.total ?? 0;
-  // If filtering is active, we mock total documents count based on filtered result
-  const effectiveTotal = (searchQuery || activeCategory !== 'All Categories') ? documents.length : totalDocuments;
+  
+  const effectiveTotal = totalDocuments;
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / PAGE_SIZE));
   const visiblePages = buildPageNumbers(page, totalPages);
   
@@ -306,17 +307,26 @@ export const DocumentListPage = () => {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e: any) => setSearchQuery(e.target.value)}
                     placeholder="Search documents..."
                     className="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all text-sm font-medium"
                   />
                 </div>
-                <button
-                  onClick={() => { setSearchQuery('Test'); setActiveCategory('PDF'); }}
-                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900"
+                <select
+                  value={sortBy}
+                  onChange={(e: any) => setSortBy(e.target.value)}
+                  className="rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-colors"
                 >
-                  <Filter className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Test Mock Filter</span>
+                  <option value="created_at_desc">Newest First</option>
+                  <option value="created_at_asc">Oldest First</option>
+                  <option value="title_asc">Title A-Z</option>
+                  <option value="title_desc">Title Z-A</option>
+                </select>
+                <button
+                  onClick={() => { setSearchQuery(''); setActiveCategoryId(null); setSortBy('created_at_desc'); }}
+                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-900 hover:text-rose-900"
+                >
+                  <span className="">Reset Filter</span>
                 </button>
                 <button
                   onClick={() => query.refetch()}
@@ -333,13 +343,19 @@ export const DocumentListPage = () => {
             </div>
 
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
-              {['All Categories', 'PDF', 'DOCX', 'Image', 'Video'].map(cat => (
                 <span 
-                  key={cat} 
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${cat === activeCategory ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
+                  onClick={() => setActiveCategoryId(null)}
+                  className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${null === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
                 >
-                  {cat}
+                  All Categories
+                </span>
+              {categories.map((cat: { id: string, name: string }) => (
+                <span 
+                  key={cat.id} 
+                  onClick={() => setActiveCategoryId(cat.id)}
+                  className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${cat.id === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
+                >
+                  {cat.name}
                 </span>
               ))}
             </div>

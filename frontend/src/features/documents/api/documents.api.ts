@@ -4,14 +4,20 @@ import type { DocumentListResponse } from '../types';
 type GetDocumentsParams = {
   skip: number;
   limit: number;
+  categoryId?: string | null;
+  search?: string;
+  sortBy?: string;
 };
 
 export const getDocuments = async ({
   skip,
   limit,
+  categoryId,
+  search,
+  sortBy,
 }: GetDocumentsParams): Promise<DocumentListResponse> => {
   const response = await axiosInstance.get<DocumentListResponse>('/documents', {
-    params: { skip, limit },
+    params: { skip, limit, category_id: categoryId, search, sort_by: sortBy },
   });
 
   return response.data;

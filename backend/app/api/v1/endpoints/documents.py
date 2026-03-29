@@ -21,6 +21,9 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 async def get_documents(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
+    category_id: Optional[UUID] = Query(None),
+    search: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
     # current_user = Depends(get_current_user), # Optional: Add authentication if needed
 ):
@@ -29,7 +32,13 @@ async def get_documents(
     """
     repository = DocumentRepositoryImpl(db)
     use_case = GetDocumentsUseCase(repository)
-    return await use_case.execute(skip=skip, limit=limit)
+    return await use_case.execute(
+        skip=skip, 
+        limit=limit, 
+        category_id=category_id, 
+        search=search, 
+        sort_by=sort_by
+    )
 
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
