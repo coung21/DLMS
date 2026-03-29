@@ -6,9 +6,9 @@ class GetDocumentsUseCase:
     def __init__(self, document_repo: DocumentRepository) -> None:
         self._document_repo = document_repo
 
-    async def execute(self, skip: int = 0, limit: int = 100) -> DocumentListResponse:
-        documents = await self._document_repo.find_all(skip=skip, limit=limit)
-        total = await self._document_repo.count_all()
+    async def execute(self, skip: int = 0, limit: int = 100, category_id=None, search=None, sort_by=None) -> DocumentListResponse:
+        documents = await self._document_repo.find_all(skip=skip, limit=limit, category_id=category_id, search=search, sort_by=sort_by)
+        total = await self._document_repo.count_all(category_id=category_id, search=search)
 
         items = [
             DocumentResponse(
