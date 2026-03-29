@@ -18,11 +18,13 @@ def _to_entity(model: DocumentModel) -> Document:
         description=model.description,
         file_path=model.file_path,
         file_type=DocumentType(model.file_type) if model.file_type else DocumentType.PDF,
-        status=DocumentStatus.AVAILABLE, # Assuming available as there is no status in model yet
+        file_size=model.file_size or 0,
+        original_file_name=model.original_file_name,
+        status=DocumentStatus.AVAILABLE,
         uploaded_by=model.uploaded_by,
         category_id=model.category_id,
         created_at=model.created_at,
-        updated_at=model.created_at, # No updated_at in model yet
+        updated_at=model.created_at,
     )
 
 
@@ -30,12 +32,21 @@ class DocumentRepositoryImpl(DocumentRepository):
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
-    async def find_all(self, skip: int = 0, limit: int = 100, category_id: UUID | None = None, search: str | None = None, sort_by: str | None = None) -> List[Document]:
+    async def find_all(self, skip: int = 0, limit: int = 100, category_id: UUID | None = None, search: str | None = None, sort_by: str | None = None, file_type: str | None = None, created_from=None, created_to=None) -> List[Document]:
         from sqlalchemy import or_, desc, asc
         stmt = select(DocumentModel)
 
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
+        
+        if file_type:
+            stmt = stmt.where(DocumentModel.file_type == file_type)
+
+        if created_from:
+            stmt = stmt.where(DocumentModel.created_at >= created_from)
+        
+        if created_to:
+            stmt = stmt.where(DocumentModel.created_at <= created_to)
         
         if search:
             search_term = f"%{search}%"
@@ -66,12 +77,21 @@ class DocumentRepositoryImpl(DocumentRepository):
         models = result.scalars().all()
         return [_to_entity(model) for model in models]
 
-    async def count_all(self, category_id: UUID | None = None, search: str | None = None) -> int:
+    async def count_all(self, category_id: UUID | None = None, search: str | None = None, file_type: str | None = None, created_from=None, created_to=None) -> int:
         from sqlalchemy import func, or_
         stmt = select(func.count()).select_from(DocumentModel)
 
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
+        
+        if file_type:
+            stmt = stmt.where(DocumentModel.file_type == file_type)
+
+        if created_from:
+            stmt = stmt.where(DocumentModel.created_at >= created_from)
+        
+        if created_to:
+            stmt = stmt.where(DocumentModel.created_at <= created_to)
         
         if search:
             search_term = f"%{search}%"
@@ -99,6 +119,8 @@ class DocumentRepositoryImpl(DocumentRepository):
             description=document.description,
             file_path=document.file_path,
             file_type=document.file_type.value if document.file_type else None,
+            file_size=document.file_size,
+            original_file_name=document.original_file_name,
             uploaded_by=document.uploaded_by,
             category_id=document.category_id,
         )

@@ -143,6 +143,7 @@ export const DocumentListPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [activeFileType, setActiveFileType] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('created_at_desc');
 
   // Debounce search query
@@ -163,12 +164,13 @@ export const DocumentListPage = () => {
   const categories = categoriesQuery.data?.items ?? [];
 
   const query = useQuery({
-    queryKey: ['documents', page, debouncedSearchQuery, activeCategoryId, sortBy],
+    queryKey: ['documents', page, debouncedSearchQuery, activeCategoryId, activeFileType, sortBy],
     queryFn: () => getDocuments({ 
       skip, 
       limit: PAGE_SIZE, 
       search: debouncedSearchQuery || undefined, 
       categoryId: activeCategoryId, 
+      fileType: activeFileType || undefined,
       sortBy 
     }),
     placeholderData: keepPreviousData,
@@ -322,8 +324,21 @@ export const DocumentListPage = () => {
                   <option value="title_asc">Title A-Z</option>
                   <option value="title_desc">Title Z-A</option>
                 </select>
+                <select
+                  value={activeFileType || ''}
+                  onChange={(e: any) => setActiveFileType(e.target.value || null)}
+                  className="rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-colors"
+                >
+                  <option value="">All Formats</option>
+                  <option value="pdf">PDF</option>
+                  <option value="docx">Word (DOCX)</option>
+                  <option value="excel">Excel</option>
+                  <option value="image">Image</option>
+                  <option value="video">Video</option>
+                  <option value="text">Text</option>
+                </select>
                 <button
-                  onClick={() => { setSearchQuery(''); setActiveCategoryId(null); setSortBy('created_at_desc'); }}
+                  onClick={() => { setSearchQuery(''); setActiveCategoryId(null); setActiveFileType(null); setSortBy('created_at_desc'); }}
                   className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-900 hover:text-rose-900"
                 >
                   <span className="">Reset Filter</span>

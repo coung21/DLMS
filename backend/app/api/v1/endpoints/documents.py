@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, UploadFile, File, Form, HTTPExcep
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from typing import Optional
+from datetime import datetime
 
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.document_repository_impl import DocumentRepositoryImpl
@@ -24,6 +25,9 @@ async def get_documents(
     category_id: Optional[UUID] = Query(None),
     search: Optional[str] = Query(None),
     sort_by: Optional[str] = Query(None),
+    file_type: Optional[str] = Query(None),
+    created_from: Optional[datetime] = Query(None),
+    created_to: Optional[datetime] = Query(None),
     db: AsyncSession = Depends(get_db),
     # current_user = Depends(get_current_user), # Optional: Add authentication if needed
 ):
@@ -37,7 +41,10 @@ async def get_documents(
         limit=limit, 
         category_id=category_id, 
         search=search, 
-        sort_by=sort_by
+        sort_by=sort_by,
+        file_type=file_type,
+        created_from=created_from,
+        created_to=created_to
     )
 
 

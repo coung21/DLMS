@@ -15,6 +15,8 @@ class DocumentResponse(BaseModel):
     status: DocumentStatus
     uploaded_by: Optional[UUID] = None
     category_id: Optional[UUID] = None
+    file_size: int = 0
+    original_file_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

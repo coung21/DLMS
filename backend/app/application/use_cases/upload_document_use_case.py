@@ -26,6 +26,11 @@ class UploadDocumentUseCase:
         content_type: str = "application/octet-stream",
     ) -> Document:
         # 1. Upload file to storage
+        # Get file size before uploading
+        file.seek(0, 2)
+        file_size = file.tell()
+        file.seek(0)
+
         # Generate a unique path for the file to avoid collisions
         unique_filename = f"{uuid.uuid4()}_{filename}"
         file_path = await self._storage_service.upload_file(
@@ -54,6 +59,8 @@ class UploadDocumentUseCase:
             description=description,
             file_path=file_path,
             file_type=file_type,
+            file_size=file_size,
+            original_file_name=filename,
             status=DocumentStatus.AVAILABLE,
             uploaded_by=uploaded_by,
             category_id=category_id,
