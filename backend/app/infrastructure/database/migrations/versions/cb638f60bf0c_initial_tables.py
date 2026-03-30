@@ -62,9 +62,12 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("file_path", sa.Text(), nullable=True),
         sa.Column("file_type", sa.String(50), nullable=True),
+        sa.Column("file_size", sa.Integer(), nullable=True),
+        sa.Column("original_file_name", sa.String(255), nullable=True),
         sa.Column("uploaded_by", UUID(as_uuid=True), nullable=True),
         sa.Column("category_id", UUID(as_uuid=True), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
+        sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(["uploaded_by"], ["users.id"], name="fk_documents_uploaded_by", ondelete="SET NULL"),
         sa.ForeignKeyConstraint(["category_id"], ["categories.id"], name="fk_documents_category_id", ondelete="SET NULL"),
     )
