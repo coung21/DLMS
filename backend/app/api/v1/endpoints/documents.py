@@ -44,7 +44,33 @@ async def get_documents(
         limit=limit, 
         category_id=category_id, 
         search=search, 
-        sort_by=sort_by
+        sort_by=sort_by,
+        status=DocumentStatus.APPROVED
+    )
+
+
+@router.get("/mine", response_model=DocumentListResponse)
+async def get_my_documents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    category_id: Optional[UUID] = Query(None),
+    search: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN, UserRole.TEACHER)),
+):
+    """
+    Fetch documents uploaded by the current user (Teachers/Admins).
+    """
+    repository = DocumentRepositoryImpl(db)
+    use_case = GetDocumentsUseCase(repository)
+    return await use_case.execute(
+        skip=skip,
+        limit=limit,
+        category_id=category_id,
+        search=search,
+        sort_by=sort_by,
+        uploaded_by=current_user_id,
     )
 
 

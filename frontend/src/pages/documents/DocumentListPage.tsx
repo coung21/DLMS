@@ -22,25 +22,32 @@ import { getDocuments } from '../../features/documents/api/documents.api';
 import { getCategories } from '../../features/categories/api/categories.api';
 import type {
   DocumentItem,
-  DocumentStatus,
   DocumentType,
 } from '../../features/documents/types';
 import { useAuthStore } from '../../store/authStore';
 
 const PAGE_SIZE = 6;
 
-const statusCopy: Record<DocumentStatus, { label: string; className: string }> = {
-  available: {
-    label: 'Available',
+const statusCopy = {
+  pending: {
+    label: 'Pending',
+    className: 'border border-amber-200 bg-amber-50 text-amber-700',
+  },
+  approved: {
+    label: 'Approved',
     className: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
+  },
+  rejected: {
+    label: 'Rejected',
+    className: 'border border-rose-200 bg-rose-50 text-rose-700',
   },
   archived: {
     label: 'Archived',
-    className: 'border border-amber-200 bg-amber-50 text-amber-700',
+    className: 'border border-slate-200 bg-slate-50 text-slate-700',
   },
   deleted: {
     label: 'Deleted',
-    className: 'border border-rose-200 bg-rose-50 text-rose-700',
+    className: 'border border-slate-200 bg-slate-50 text-slate-700',
   },
 };
 
@@ -183,7 +190,7 @@ export const DocumentListPage = () => {
   
   const currentStart = effectiveTotal === 0 ? 0 : skip + 1;
   const currentEnd = effectiveTotal === 0 ? 0 : skip + documents.length;
-  const availableCount = documents.filter((document) => document.status === 'available').length;
+  const availableCount = documents.filter((document) => document.status === 'approved').length;
 
   const updatePage = (nextPage: number, replace = false) => {
     const normalizedPage = Math.max(1, Math.min(nextPage, totalPages));
