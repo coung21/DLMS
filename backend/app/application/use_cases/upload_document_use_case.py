@@ -2,14 +2,14 @@ import uuid
 from typing import BinaryIO, Optional
 from app.domain.entities.document import Document
 from app.domain.enums import DocumentType, DocumentStatus
-from app.domain.repositories.document_repository import DocumentRepository
+from app.domain.repositories.document_repository import IDocumentRepository
 from app.domain.services.storage_service import StorageService
 
 
 class UploadDocumentUseCase:
     def __init__(
         self,
-        document_repository: DocumentRepository,
+        document_repository: IDocumentRepository,
         storage_service: StorageService,
     ):
         self._document_repository = document_repository
@@ -42,19 +42,20 @@ class UploadDocumentUseCase:
             file_type = DocumentType.EXCEL
         elif file_ext == "txt":
             file_type = DocumentType.TEXT
-        elif file_ext in ["jpg", "jpeg", "png"]:
-            file_type = DocumentType.IMAGE
         else:
-            file_type = DocumentType.OTHER
+            file_type = DocumentType.PDF
 
         # 3. Create document entity
+        # New documents start in PENDING status until admin approves
         document = Document(
             id=uuid.uuid4(),
             title=title,
             description=description,
             file_path=file_path,
             file_type=file_type,
-            status=DocumentStatus.AVAILABLE,
+            status=DocumentStatus.PENDING,
+            file_size=0,
+            original_file_name=filename,
             uploaded_by=uploaded_by,
             category_id=category_id,
         )

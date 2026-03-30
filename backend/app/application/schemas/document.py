@@ -1,7 +1,8 @@
+from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
-from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.domain.enums import DocumentStatus, DocumentType
 
@@ -14,6 +15,8 @@ class DocumentResponse(BaseModel):
     file_type: DocumentType
     status: DocumentStatus
     uploaded_by: Optional[UUID] = None
+    reviewed_by: Optional[UUID] = None
+    review_comment: Optional[str] = None
     category_id: Optional[UUID] = None
     created_at: datetime
     updated_at: datetime
@@ -21,7 +24,46 @@ class DocumentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DocumentUpdateRequest(BaseModel):
+    title: Optional[str] = Field(default=None, max_length=255)
+    description: Optional[str] = Field(default=None, max_length=1000)
+    category_id: Optional[UUID] = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Title is required")
+
+        return normalized
+
+    @field_validator("description")
+    @classmethod
+    def normalize_description(cls, value: Optional[str]) -> Optional[str]:
+        return value.strip() if value is not None else None
+
+
 class DocumentListResponse(BaseModel):
+    items: List[DocumentResponse]
+    total: int
+    skip: int
+    limit: int
+
+
+class ReviewDocumentRequest(BaseModel):
+    """Request to review (approve/reject) a document."""
+    status: DocumentStatus  # Either "approved" or "rejected"
+    review_comment: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PendingDocumentsResponse(BaseModel):
+    """List of documents pending review."""
     items: List[DocumentResponse]
     total: int
     skip: int

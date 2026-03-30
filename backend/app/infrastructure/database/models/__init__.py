@@ -36,7 +36,7 @@ class UserModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     role = relationship("RoleModel", back_populates="users")
-    documents = relationship("DocumentModel", back_populates="uploader")
+    documents_uploaded = relationship("DocumentModel", foreign_keys="DocumentModel.uploaded_by", back_populates="uploader")
 
 
 class CategoryModel(Base):
@@ -60,9 +60,14 @@ class DocumentModel(Base):
     file_type = Column(String(50), nullable=True)
     file_size = Column(Integer, default=0)
     original_file_name = Column(String(255), nullable=True)
+    status = Column(String(50), default="pending", nullable=False)
     uploaded_by = Column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reviewed_by = Column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    review_comment = Column(Text, nullable=True)
     category_id = Column(PGUUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    uploader = relationship("UserModel", back_populates="documents")
+    uploader = relationship("UserModel", foreign_keys=[uploaded_by], back_populates="documents_uploaded")
+    reviewer = relationship("UserModel", foreign_keys=[reviewed_by])
     category = relationship("CategoryModel", back_populates="documents")

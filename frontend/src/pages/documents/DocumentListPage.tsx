@@ -15,7 +15,7 @@ import {
   Video,
   Search,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { getDocuments } from '../../features/documents/api/documents.api';
@@ -310,7 +310,7 @@ export const DocumentListPage = () => {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e: any) => setSearchQuery(e.target.value)}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setSearchQuery(event.target.value)}
                     placeholder="Search documents..."
                     className="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all text-sm font-medium"
                   />
@@ -487,7 +487,7 @@ export const DocumentListPage = () => {
                   >
                     <span className="inline-flex items-center">
                       <BookOpen className="mr-3 h-4 w-4" />
-                      Teacher upload
+                      Teacher workspace
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>
