@@ -24,7 +24,17 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add columns to documents table
+    # Add missing columns from initial schema
+    op.add_column(
+        "documents",
+        sa.Column("file_size", sa.Integer(), nullable=False, server_default="0")
+    )
+    op.add_column(
+        "documents",
+        sa.Column("original_file_name", sa.String(255), nullable=True)
+    )
+    
+    # Add columns to documents table for review workflow
     op.add_column(
         "documents",
         sa.Column("status", sa.String(50), nullable=False, server_default="pending")
@@ -63,3 +73,12 @@ def downgrade() -> None:
     op.drop_column("documents", "review_comment")
     op.drop_column("documents", "reviewed_by")
     op.drop_column("documents", "status")
+    op.drop_column("documents", "original_file_name")
+    op.drop_column("documents", "file_size")
+    op.drop_constraint("fk_documents_reviewed_by", "documents", type_="foreignkey")
+    op.drop_column("documents", "updated_at")
+    op.drop_column("documents", "review_comment")
+    op.drop_column("documents", "reviewed_by")
+    op.drop_column("documents", "status")
+    op.drop_column("documents", "original_file_name")
+    op.drop_column("documents", "file_size")
