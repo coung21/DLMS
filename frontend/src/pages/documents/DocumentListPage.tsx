@@ -147,20 +147,50 @@ export const DocumentListPage = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<string>('created_at_desc');
 
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
+  // DERIVED STATE FROM URL
+  const searchQueryParam = searchParams.get('search') ?? '';
+  const activeCategoryId = searchParams.get('category');
+  const sortBy = searchParams.get('sort') ?? 'created_at_desc';
   const rawPage = Number(searchParams.get('page') ?? '1');
   const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
   const skip = (page - 1) * PAGE_SIZE;
+
+  // LOCAL STATE FOR RESPONSIVE SEARCH INPUT
+  const [searchQuery, setSearchQuery] = useState(searchQueryParam);
+
+  // Helper to update URL params
+  const updateParams = (updates: Record<string, string | null>, replace = false) => {
+    setSearchParams(
+      (currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value === null || value === '' || (key === 'page' && value === '1')) {
+            nextParams.delete(key);
+          } else {
+            nextParams.set(key, value);
+          }
+        });
+        return nextParams;
+      },
+      { replace },
+    );
+  };
+
+  // Debounce search query to URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery !== searchQueryParam) {
+        updateParams({ search: searchQuery, page: '1' });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchQueryParam]);
+
+  // Keep local search query in sync if URL changes externally (e.g. back button)
+  useEffect(() => {
+    setSearchQuery(searchQueryParam);
+  }, [searchQueryParam]);
 
   // Categories query
   const categoriesQuery = useQuery({
@@ -170,11 +200,11 @@ export const DocumentListPage = () => {
   const categories = categoriesQuery.data?.items ?? [];
 
   const query = useQuery({
-    queryKey: ['documents', page, debouncedSearchQuery, activeCategoryId, sortBy],
+    queryKey: ['documents', page, searchQueryParam, activeCategoryId, sortBy],
     queryFn: () => getDocuments({ 
       skip, 
       limit: PAGE_SIZE, 
-      search: debouncedSearchQuery || undefined, 
+      search: searchQueryParam || undefined, 
       categoryId: activeCategoryId, 
       sortBy 
     }),
@@ -194,41 +224,14 @@ export const DocumentListPage = () => {
 
   const updatePage = (nextPage: number, replace = false) => {
     const normalizedPage = Math.max(1, Math.min(nextPage, totalPages));
-
-    setSearchParams(
-      (currentParams) => {
-        const nextParams = new URLSearchParams(currentParams);
-
-        if (normalizedPage === 1) {
-          nextParams.delete('page');
-        } else {
-          nextParams.set('page', String(normalizedPage));
-        }
-
-        return nextParams;
-      },
-      { replace },
-    );
+    updateParams({ page: String(normalizedPage) }, replace);
   };
 
   useEffect(() => {
     if (query.data && totalDocuments > 0 && page > totalPages) {
-      setSearchParams(
-        (currentParams) => {
-          const nextParams = new URLSearchParams(currentParams);
-
-          if (totalPages === 1) {
-            nextParams.delete('page');
-          } else {
-            nextParams.set('page', String(totalPages));
-          }
-
-          return nextParams;
-        },
-        { replace: true },
-      );
+      updateParams({ page: String(totalPages) }, true);
     }
-  }, [page, query.data, setSearchParams, totalDocuments, totalPages]);
+  }, [page, query.data, totalDocuments, totalPages]);
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f6f1e8_0%,#f8fafc_52%,#edf3f8_100%)] text-slate-900">
@@ -321,7 +324,7 @@ export const DocumentListPage = () => {
                 </div>
                 <select
                   value={sortBy}
-                  onChange={(event: ChangeEvent<HTMLSelectElement>) => setSortBy(event.target.value)}
+                  onChange={(e: any) => updateParams({ sort: e.target.value, page: '1' })}
                   className="rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-colors"
                 >
                   <option value="created_at_desc">Newest First</option>
@@ -330,7 +333,10 @@ export const DocumentListPage = () => {
                   <option value="title_desc">Title Z-A</option>
                 </select>
                 <button
-                  onClick={() => { setSearchQuery(''); setActiveCategoryId(null); setSortBy('created_at_desc'); }}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchParams(new URLSearchParams());
+                  }}
                   className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-900 hover:text-rose-900"
                 >
                   <span className="">Reset Filter</span>
@@ -349,9 +355,9 @@ export const DocumentListPage = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+             <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
                 <span 
-                  onClick={() => setActiveCategoryId(null)}
+                  onClick={() => updateParams({ category: null, page: '1' })}
                   className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${null === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
                 >
                   All Categories
@@ -359,7 +365,7 @@ export const DocumentListPage = () => {
               {categories.map((cat: { id: string, name: string }) => (
                 <span 
                   key={cat.id} 
-                  onClick={() => setActiveCategoryId(cat.id)}
+                  onClick={() => updateParams({ category: cat.id, page: '1' })}
                   className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${cat.id === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
                 >
                   {cat.name}
