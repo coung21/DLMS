@@ -1,9 +1,9 @@
 from app.application.schemas.document import DocumentResponse, DocumentListResponse
-from app.domain.repositories.document_repository import DocumentRepository
+from app.domain.repositories.document_repository import IDocumentRepository
 
 
 class GetDocumentsUseCase:
-    def __init__(self, document_repo: DocumentRepository) -> None:
+    def __init__(self, document_repo: IDocumentRepository) -> None:
         self._document_repo = document_repo
 
     async def execute(self, skip: int = 0, limit: int = 100, category_id=None, search=None, sort_by=None) -> DocumentListResponse:
@@ -19,6 +19,8 @@ class GetDocumentsUseCase:
                 file_type=doc.file_type,
                 status=doc.status,
                 uploaded_by=doc.uploaded_by,
+                reviewed_by=doc.reviewed_by,
+                review_comment=doc.review_comment,
                 category_id=doc.category_id,
                 created_at=doc.created_at,
                 updated_at=doc.updated_at,
