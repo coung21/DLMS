@@ -42,14 +42,6 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=False, server_default=sa.func.now())
     )
     
-    # Update file_size column to have default value
-    op.alter_column(
-        "documents",
-        "file_size",
-        existing_type=sa.Integer(),
-        server_default="0"
-    )
-    
     # Add foreign key constraint for reviewed_by
     op.create_foreign_key(
         "fk_documents_reviewed_by",
