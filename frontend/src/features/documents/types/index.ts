@@ -1,4 +1,4 @@
-export type DocumentType = 'pdf' | 'docx' | 'excel' | 'text';
+export type DocumentType = 'pdf' | 'docx' | 'excel' | 'text' | 'image' | 'video' | 'other';
 
 export type DocumentStatus = 'pending' | 'approved' | 'rejected' | 'archived' | 'deleted';
 

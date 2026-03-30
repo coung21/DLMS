@@ -34,20 +34,18 @@ class DocumentRepositoryImpl(IDocumentRepository):
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
-    async def find_all(
-        self,
-        skip: int = 0,
-        limit: int = 100,
-        category_id: UUID | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        uploaded_by: UUID | None = None,
-    ) -> List[Document]:
+    async def find_all(self, skip: int = 0, limit: int = 100, category_id: UUID | None = None, search: str | None = None, sort_by: str | None = None, status: str | None = None, uploaded_by: UUID | None = None) -> List[Document]:
         stmt = select(DocumentModel)
 
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
 
+        if uploaded_by:
+            stmt = stmt.where(DocumentModel.uploaded_by == uploaded_by)
+        
+        if status:
+            stmt = stmt.where(DocumentModel.status == status)
+        
         if uploaded_by:
             stmt = stmt.where(DocumentModel.uploaded_by == uploaded_by)
         
@@ -84,6 +82,7 @@ class DocumentRepositoryImpl(IDocumentRepository):
         self,
         category_id: UUID | None = None,
         search: str | None = None,
+        status: str | None = None,
         uploaded_by: UUID | None = None,
     ) -> int:
         stmt = select(func.count()).select_from(DocumentModel)
@@ -91,6 +90,9 @@ class DocumentRepositoryImpl(IDocumentRepository):
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
 
+        if status:
+            stmt = stmt.where(DocumentModel.status == status)
+        
         if uploaded_by:
             stmt = stmt.where(DocumentModel.uploaded_by == uploaded_by)
         

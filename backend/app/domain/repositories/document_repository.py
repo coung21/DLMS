@@ -10,25 +10,12 @@ class IDocumentRepository(ABC):
     """Interface for document repository."""
 
     @abstractmethod
-    async def find_all(
-        self,
-        skip: int = 0,
-        limit: int = 100,
-        category_id: UUID | None = None,
-        search: str | None = None,
-        sort_by: str | None = None,
-        uploaded_by: UUID | None = None,
-    ) -> List[Document]:
+    async def find_all(self, skip: int = 0, limit: int = 100, category_id: UUID | None = None, search: str | None = None, sort_by: str | None = None, status: str | None = None, uploaded_by: UUID | None = None) -> List[Document]:
         """Fetch all documents with pagination and optional filtering/sorting."""
         pass
 
     @abstractmethod
-    async def count_all(
-        self,
-        category_id: UUID | None = None,
-        search: str | None = None,
-        uploaded_by: UUID | None = None,
-    ) -> int:
+    async def count_all(self, category_id: UUID | None = None, search: str | None = None, status: str | None = None, uploaded_by: UUID | None = None) -> int:
         """Count total documents."""
         pass
 
