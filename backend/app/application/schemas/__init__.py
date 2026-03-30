@@ -17,4 +17,5 @@ from .category import (
 from .document import (
     DocumentResponse as DocumentResponse,
     DocumentListResponse as DocumentListResponse,
+    DocumentUpdateRequest as DocumentUpdateRequest,
 )

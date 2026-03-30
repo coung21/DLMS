@@ -24,6 +24,18 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> UUID:
         ) from exc
 
 
+async def get_current_user_role(token: str = Depends(oauth2_scheme)) -> UserRole:
+    try:
+        payload = decode_token(token)
+        return UserRole(payload["role"])
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+
 def require_roles(*roles: UserRole):
     async def _checker(
         token: str = Depends(oauth2_scheme),

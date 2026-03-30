@@ -40,6 +40,11 @@ class IDocumentRepository(ABC):
         pass
 
     @abstractmethod
+    async def delete(self, document_id: UUID) -> None:
+        """Delete a document by ID."""
+        pass
+
+    @abstractmethod
     async def get_pending_documents(
         self,
         skip: int = 0,

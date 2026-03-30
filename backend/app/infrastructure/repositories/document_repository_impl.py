@@ -26,7 +26,7 @@ def _to_entity(model: DocumentModel) -> Document:
         review_comment=model.review_comment,
         category_id=model.category_id,
         created_at=model.created_at,
-        updated_at=model.updated_at,
+        updated_at=model.updated_at or model.created_at,
     )
 
 
@@ -39,6 +39,9 @@ class DocumentRepositoryImpl(IDocumentRepository):
 
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
+
+        if uploaded_by:
+            stmt = stmt.where(DocumentModel.uploaded_by == uploaded_by)
         
         if status:
             stmt = stmt.where(DocumentModel.status == status)
@@ -155,11 +158,21 @@ class DocumentRepositoryImpl(IDocumentRepository):
         model.reviewed_by = document.reviewed_by
         model.review_comment = document.review_comment
         model.category_id = document.category_id
-        model.updated_at = document.updated_at
-        
+        model.updated_at = document.updated_at or func.now()
         await self._db.commit()
         await self._db.refresh(model)
         return _to_entity(model)
+
+    async def delete(self, document_id: UUID) -> None:
+        result = await self._db.execute(
+            select(DocumentModel).where(DocumentModel.id == document_id)
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            raise ValueError(f"Document {document_id} not found")
+
+        await self._db.delete(model)
+        await self._db.commit()
 
     async def get_pending_documents(
         self,

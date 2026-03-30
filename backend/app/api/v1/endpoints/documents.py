@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, Query, UploadFile, File, Form, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 from typing import Optional
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.v1.dependencies.auth import get_current_user_role, require_roles
+from app.application.schemas.document import DocumentListResponse, DocumentResponse, DocumentUpdateRequest
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.document_repository_impl import DocumentRepositoryImpl
 from app.infrastructure.services.storage.minio_storage_service import MinioStorageService
 from app.application.use_cases.get_documents_use_case import GetDocumentsUseCase
+from app.application.use_cases.manage_document_use_cases import DeleteDocumentUseCase, UpdateDocumentUseCase
 from app.application.use_cases.upload_document_use_case import UploadDocumentUseCase
 from app.application.use_cases.get_pending_documents_use_case import GetPendingDocumentsUseCase
 from app.application.use_cases.review_document_use_case import ReviewDocumentUseCase
@@ -19,9 +23,18 @@ from app.application.schemas.document import (
 from app.domain.enums import UserRole, DocumentStatus
 from app.api.v1.dependencies.auth import require_roles
 
-
-
 router = APIRouter(prefix="/documents", tags=["documents"])
+
+
+def _ensure_document_access(document: DocumentResponse, current_user_id: UUID, current_user_role: UserRole) -> None:
+    if current_user_role == UserRole.ADMIN:
+        return
+
+    if document.uploaded_by != current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage documents you uploaded.",
+        )
 
 
 @router.get("", response_model=DocumentListResponse)
@@ -247,3 +260,55 @@ async def upload_document(
         content_type=file.content_type,
         uploaded_by=current_user_id,
     )
+
+
+@router.patch("/{document_id}", response_model=DocumentResponse)
+async def update_document(
+    document_id: UUID,
+    payload: DocumentUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN, UserRole.TEACHER)),
+    current_user_role: UserRole = Depends(get_current_user_role),
+):
+    repository = DocumentRepositoryImpl(db)
+    existing_document = await repository.find_by_id(document_id)
+    if not existing_document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    _ensure_document_access(existing_document, current_user_id, current_user_role)
+
+    use_case = UpdateDocumentUseCase(repository)
+    try:
+        return await use_case.execute(document_id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    document_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN, UserRole.TEACHER)),
+    current_user_role: UserRole = Depends(get_current_user_role),
+):
+    repository = DocumentRepositoryImpl(db)
+    existing_document = await repository.find_by_id(document_id)
+    if not existing_document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    _ensure_document_access(existing_document, current_user_id, current_user_role)
+
+    storage_service = MinioStorageService()
+    use_case = DeleteDocumentUseCase(repository, storage_service)
+    try:
+        await use_case.execute(document_id)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

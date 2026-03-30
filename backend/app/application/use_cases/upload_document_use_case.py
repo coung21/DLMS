@@ -53,8 +53,9 @@ class UploadDocumentUseCase:
             description=description,
             file_path=file_path,
             file_type=file_type,
-            file_size=0,  # Will be calculated by storage service
             status=DocumentStatus.PENDING,
+            file_size=0,
+            original_file_name=filename,
             uploaded_by=uploaded_by,
             category_id=category_id,
         )
