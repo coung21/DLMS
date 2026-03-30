@@ -5,7 +5,13 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Respon
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies.auth import get_current_user_role, require_roles
-from app.application.schemas.document import DocumentListResponse, DocumentResponse, DocumentUpdateRequest
+from app.application.schemas.document import (
+    DocumentListResponse, 
+    DocumentResponse, 
+    DocumentUpdateRequest,
+    ReviewDocumentRequest,
+    PendingDocumentsResponse,
+)
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.document_repository_impl import DocumentRepositoryImpl
 from app.infrastructure.services.storage.minio_storage_service import MinioStorageService
@@ -14,14 +20,7 @@ from app.application.use_cases.manage_document_use_cases import DeleteDocumentUs
 from app.application.use_cases.upload_document_use_case import UploadDocumentUseCase
 from app.application.use_cases.get_pending_documents_use_case import GetPendingDocumentsUseCase
 from app.application.use_cases.review_document_use_case import ReviewDocumentUseCase
-from app.application.schemas.document import (
-    DocumentListResponse, 
-    DocumentResponse, 
-    ReviewDocumentRequest,
-    PendingDocumentsResponse,
-)
 from app.domain.enums import UserRole, DocumentStatus
-from app.api.v1.dependencies.auth import require_roles
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
