@@ -1,6 +1,5 @@
 """Use case for getting pending documents."""
 from typing import Optional
-from uuid import UUID
 from app.domain.repositories.document_repository import IDocumentRepository
 
 
