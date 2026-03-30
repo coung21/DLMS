@@ -38,11 +38,13 @@ class DocumentRepositoryImpl(DocumentRepository):
             stmt = stmt.where(DocumentModel.category_id == category_id)
         
         if search:
+            from app.infrastructure.database.models import CategoryModel
             search_term = f"%{search}%"
-            stmt = stmt.where(
+            stmt = stmt.outerjoin(CategoryModel, DocumentModel.category_id == CategoryModel.id).where(
                 or_(
                     DocumentModel.title.ilike(search_term),
-                    DocumentModel.description.ilike(search_term)
+                    DocumentModel.description.ilike(search_term),
+                    CategoryModel.name.ilike(search_term)
                 )
             )
 
@@ -74,11 +76,13 @@ class DocumentRepositoryImpl(DocumentRepository):
             stmt = stmt.where(DocumentModel.category_id == category_id)
         
         if search:
+            from app.infrastructure.database.models import CategoryModel
             search_term = f"%{search}%"
-            stmt = stmt.where(
+            stmt = stmt.outerjoin(CategoryModel, DocumentModel.category_id == CategoryModel.id).where(
                 or_(
                     DocumentModel.title.ilike(search_term),
-                    DocumentModel.description.ilike(search_term)
+                    DocumentModel.description.ilike(search_term),
+                    CategoryModel.name.ilike(search_term)
                 )
             )
 
