@@ -12,6 +12,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories.api';
+import { getApiErrorMessage } from '../../../lib/api-error';
 import type { Category } from '../types';
 
 export const CategoryManagementPage: React.FC = () => {
@@ -229,9 +230,10 @@ export const CategoryManagementPage: React.FC = () => {
                 <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-600 flex items-start">
                   <AlertCircle className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
                   <span>
-                    {(createMutation.error as any)?.response?.data?.detail || 
-                     (updateMutation.error as any)?.response?.data?.detail || 
-                     'Something went wrong. Please try again.'}
+                    {getApiErrorMessage(
+                      createMutation.error ?? updateMutation.error,
+                      'Something went wrong. Please try again.',
+                    )}
                   </span>
                 </div>
               )}

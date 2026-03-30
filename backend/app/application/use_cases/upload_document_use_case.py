@@ -55,6 +55,7 @@ class UploadDocumentUseCase:
             file_path=file_path,
             file_type=file_type,
             status=DocumentStatus.AVAILABLE,
+            original_file_name=filename,
             uploaded_by=uploaded_by,
             category_id=category_id,
         )

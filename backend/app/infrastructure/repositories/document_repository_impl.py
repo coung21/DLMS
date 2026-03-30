@@ -18,11 +18,11 @@ def _to_entity(model: DocumentModel) -> Document:
         description=model.description,
         file_path=model.file_path,
         file_type=DocumentType(model.file_type) if model.file_type else DocumentType.PDF,
-        status=DocumentStatus.AVAILABLE, # Assuming available as there is no status in model yet
+        status=DocumentStatus.AVAILABLE,
         uploaded_by=model.uploaded_by,
         category_id=model.category_id,
         created_at=model.created_at,
-        updated_at=model.created_at, # No updated_at in model yet
+        updated_at=model.updated_at or model.created_at,
     )
 
 
@@ -30,12 +30,23 @@ class DocumentRepositoryImpl(DocumentRepository):
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
-    async def find_all(self, skip: int = 0, limit: int = 100, category_id: UUID | None = None, search: str | None = None, sort_by: str | None = None) -> List[Document]:
+    async def find_all(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        category_id: UUID | None = None,
+        search: str | None = None,
+        sort_by: str | None = None,
+        uploaded_by: UUID | None = None,
+    ) -> List[Document]:
         from sqlalchemy import or_, desc, asc
         stmt = select(DocumentModel)
 
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
+
+        if uploaded_by:
+            stmt = stmt.where(DocumentModel.uploaded_by == uploaded_by)
         
         if search:
             search_term = f"%{search}%"
@@ -66,12 +77,20 @@ class DocumentRepositoryImpl(DocumentRepository):
         models = result.scalars().all()
         return [_to_entity(model) for model in models]
 
-    async def count_all(self, category_id: UUID | None = None, search: str | None = None) -> int:
+    async def count_all(
+        self,
+        category_id: UUID | None = None,
+        search: str | None = None,
+        uploaded_by: UUID | None = None,
+    ) -> int:
         from sqlalchemy import func, or_
         stmt = select(func.count()).select_from(DocumentModel)
 
         if category_id:
             stmt = stmt.where(DocumentModel.category_id == category_id)
+
+        if uploaded_by:
+            stmt = stmt.where(DocumentModel.uploaded_by == uploaded_by)
         
         if search:
             search_term = f"%{search}%"
@@ -99,6 +118,8 @@ class DocumentRepositoryImpl(DocumentRepository):
             description=document.description,
             file_path=document.file_path,
             file_type=document.file_type.value if document.file_type else None,
+            file_size=document.file_size,
+            original_file_name=document.original_file_name,
             uploaded_by=document.uploaded_by,
             category_id=document.category_id,
         )
@@ -106,3 +127,31 @@ class DocumentRepositoryImpl(DocumentRepository):
         await self._db.commit()
         await self._db.refresh(model)
         return _to_entity(model)
+
+    async def update(self, document: Document) -> Document:
+        result = await self._db.execute(
+            select(DocumentModel).where(DocumentModel.id == document.id)
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            raise ValueError(f"Document {document.id} not found")
+
+        model.title = document.title
+        model.description = document.description
+        model.category_id = document.category_id
+        model.updated_at = document.updated_at
+
+        await self._db.commit()
+        await self._db.refresh(model)
+        return _to_entity(model)
+
+    async def delete(self, document_id: UUID) -> None:
+        result = await self._db.execute(
+            select(DocumentModel).where(DocumentModel.id == document_id)
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            raise ValueError(f"Document {document_id} not found")
+
+        await self._db.delete(model)
+        await self._db.commit()
