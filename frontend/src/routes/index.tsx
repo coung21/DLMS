@@ -10,6 +10,8 @@ import { DocumentListPage } from '../pages/documents/DocumentListPage';
 import { NotFoundPage } from '../pages/error/NotFoundPage';
 import { UnauthorizedPage } from '../pages/error/UnauthorizedPage';
 import { TeacherUploadPage } from '../pages/teacher/TeacherUploadPage';
+import { TeacherPortalPage } from '../pages/teacher/TeacherPortalPage';
+import { TeacherDocumentsPage } from '../pages/teacher/TeacherDocumentsPage';
 import { UserManagementPage } from '../features/users/components/UserManagementPage';
 import { CategoryManagementPage } from '../features/categories/components/CategoryManagementPage';
 
@@ -48,7 +50,23 @@ export const router = createBrowserRouter([
     path: '/teacher',
     element: (
       <ProtectedRoute allowedRoles={['admin', 'teacher']}>
+        <TeacherPortalPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/teacher/upload',
+    element: (
+      <ProtectedRoute allowedRoles={['admin', 'teacher']}>
         <TeacherUploadPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/teacher/my-documents',
+    element: (
+      <ProtectedRoute allowedRoles={['admin', 'teacher']}>
+        <TeacherDocumentsPage />
       </ProtectedRoute>
     ),
   },
