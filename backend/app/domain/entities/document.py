@@ -17,8 +17,10 @@ class Document:
     file_type: DocumentType = DocumentType.PDF
     file_size: int = 0
     original_file_name: str | None = None
-    status: DocumentStatus = DocumentStatus.AVAILABLE
+    status: DocumentStatus = DocumentStatus.PENDING
     uploaded_by: UUID | None = None
+    reviewed_by: UUID | None = None
     category_id: UUID | None = None
+    review_comment: str | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

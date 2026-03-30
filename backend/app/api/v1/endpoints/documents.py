@@ -12,7 +12,16 @@ from app.infrastructure.services.storage.minio_storage_service import MinioStora
 from app.application.use_cases.get_documents_use_case import GetDocumentsUseCase
 from app.application.use_cases.manage_document_use_cases import DeleteDocumentUseCase, UpdateDocumentUseCase
 from app.application.use_cases.upload_document_use_case import UploadDocumentUseCase
-from app.domain.enums import UserRole
+from app.application.use_cases.get_pending_documents_use_case import GetPendingDocumentsUseCase
+from app.application.use_cases.review_document_use_case import ReviewDocumentUseCase
+from app.application.schemas.document import (
+    DocumentListResponse, 
+    DocumentResponse, 
+    ReviewDocumentRequest,
+    PendingDocumentsResponse,
+)
+from app.domain.enums import UserRole, DocumentStatus
+from app.api.v1.dependencies.auth import require_roles
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -74,6 +83,118 @@ async def get_my_documents(
     )
 
 
+@router.get("/pending", response_model=PendingDocumentsResponse)
+async def get_pending_documents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN)),
+):
+    """
+    Fetch documents pending admin review (ADMIN only).
+    """
+    repository = DocumentRepositoryImpl(db)
+    use_case = GetPendingDocumentsUseCase(repository)
+    result = await use_case.execute(
+        skip=skip,
+        limit=limit,
+        search=search,
+        sort_by=sort_by,
+    )
+    return PendingDocumentsResponse(
+        items=[DocumentResponse.model_validate(doc) for doc in result["items"]],
+        total=result["total"],
+        skip=skip,
+        limit=limit,
+    )
+
+
+@router.post("/{document_id}/review", response_model=DocumentResponse)
+async def review_document(
+    document_id: UUID,
+    request: ReviewDocumentRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN)),
+):
+    """
+    Review (approve or reject) a document (ADMIN only).
+    """
+    repository = DocumentRepositoryImpl(db)
+    use_case = ReviewDocumentUseCase(repository)
+    
+    try:
+        updated_document = await use_case.execute(
+            document_id=document_id,
+            status=request.status,
+            review_comment=request.review_comment,
+            reviewed_by=current_user_id,
+        )
+        return DocumentResponse.model_validate(updated_document)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/{document_id}/approve", response_model=DocumentResponse)
+async def approve_document(
+    document_id: UUID,
+    review_comment: Optional[str] = Form(None),
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN)),
+):
+    """
+    Approve a document (ADMIN only - shorthand endpoint).
+    """
+    repository = DocumentRepositoryImpl(db)
+    use_case = ReviewDocumentUseCase(repository)
+    
+    try:
+        updated_document = await use_case.execute(
+            document_id=document_id,
+            status=DocumentStatus.APPROVED,
+            review_comment=review_comment,
+            reviewed_by=current_user_id,
+        )
+        return DocumentResponse.model_validate(updated_document)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/{document_id}/reject", response_model=DocumentResponse)
+async def reject_document(
+    document_id: UUID,
+    review_comment: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN)),
+):
+    """
+    Reject a document (ADMIN only - must provide reason).
+    """
+    repository = DocumentRepositoryImpl(db)
+    use_case = ReviewDocumentUseCase(repository)
+    
+    try:
+        updated_document = await use_case.execute(
+            document_id=document_id,
+            status=DocumentStatus.REJECTED,
+            review_comment=review_comment,
+            reviewed_by=current_user_id,
+        )
+        return DocumentResponse.model_validate(updated_document)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_EXTENSIONS = {
     "pdf", "docx", "doc", "xlsx", "xls", "jpg", "jpeg", "png", "txt"
@@ -91,6 +212,7 @@ async def upload_document(
 ):
     """
     Upload a document and save its metadata.
+    Document will be in PENDING status until admin reviews it.
     """
     # 1. Validate file extension
     file_ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""

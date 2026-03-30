@@ -43,7 +43,7 @@ async def test_teacher_can_upload_document():
             description="Course syllabus",
             file_path="teacher_upload.pdf",
             file_type=DocumentType.PDF,
-            status=DocumentStatus.AVAILABLE,
+            status=DocumentStatus.PENDING,
             uploaded_by=uuid.uuid4(),
             category_id=None,
             created_at=datetime.utcnow(),

@@ -18,7 +18,9 @@ class UserStatus(str, Enum):
 
 
 class DocumentStatus(str, Enum):
-    AVAILABLE = "available"
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
     ARCHIVED = "archived"
     DELETED = "deleted"
 

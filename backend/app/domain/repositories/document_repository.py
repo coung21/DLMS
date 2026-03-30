@@ -1,12 +1,12 @@
 """Document repository interface."""
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict, Any
 from uuid import UUID
 
 from app.domain.entities.document import Document
 
 
-class DocumentRepository(ABC):
+class IDocumentRepository(ABC):
     """Interface for document repository."""
 
     @abstractmethod
@@ -38,6 +38,11 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_by_id(self, document_id: UUID) -> Document | None:
+        """Fetch a document by ID (alias for find_by_id)."""
+        pass
+
+    @abstractmethod
     async def save(self, document: Document) -> Document:
         """Save a new document."""
         pass
@@ -51,3 +56,18 @@ class DocumentRepository(ABC):
     async def delete(self, document_id: UUID) -> None:
         """Delete a document by ID."""
         pass
+
+    @abstractmethod
+    async def get_pending_documents(
+        self,
+        skip: int = 0,
+        limit: int = 10,
+        search: str | None = None,
+        sort_by: str | None = None,
+    ) -> Dict[str, Any]:
+        """Get documents pending review."""
+        pass
+
+
+# For backward compatibility
+DocumentRepository = IDocumentRepository

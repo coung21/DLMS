@@ -37,7 +37,7 @@ async def test_upload_document_success():
             description="This is a test document",
             file_path="mock_file_path.pdf",
             file_type=DocumentType.PDF,
-            status=DocumentStatus.AVAILABLE,
+            status=DocumentStatus.PENDING,
             uploaded_by=uuid.uuid4(),
             category_id=None,
             created_at=now,
