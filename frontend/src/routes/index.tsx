@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../components/guards/ProtectedRoute';
 import { AuthLayout } from '../components/layouts/AuthLayout';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
+import { DocumentReviewPage } from '../pages/admin/DocumentReviewPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { DocumentListPage } from '../pages/documents/DocumentListPage';
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
       {
         path: 'categories',
         element: <CategoryManagementPage />,
+      },
+      {
+        path: 'documents-review',
+        element: <DocumentReviewPage />,
       },
     ],
   },

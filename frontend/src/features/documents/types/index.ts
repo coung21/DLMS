@@ -1,6 +1,6 @@
-export type DocumentType = 'pdf' | 'docx' | 'excel' | 'text' | 'image' | 'video' | 'other';
+export type DocumentType = 'pdf' | 'docx' | 'excel' | 'text';
 
-export type DocumentStatus = 'available' | 'archived' | 'deleted';
+export type DocumentStatus = 'pending' | 'approved' | 'rejected' | 'archived' | 'deleted';
 
 export type UploadDocumentPayload = {
   file: File;
@@ -15,8 +15,12 @@ export type Document = {
   description: string;
   file_path: string | null;
   file_type: DocumentType;
+  file_size: number;
+  original_file_name: string | null;
   status: DocumentStatus;
   uploaded_by: string | null;
+  reviewed_by: string | null;
+  review_comment: string | null;
   category_id: string | null;
   created_at: string;
   updated_at: string;
@@ -25,6 +29,18 @@ export type Document = {
 export type DocumentItem = Document;
 
 export type DocumentListResponse = {
+  items: DocumentItem[];
+  total: number;
+  skip: number;
+  limit: number;
+};
+
+export type ReviewDocumentPayload = {
+  status: 'approved' | 'rejected';
+  review_comment?: string;
+};
+
+export type PendingDocumentsResponse = {
   items: DocumentItem[];
   total: number;
   skip: number;
