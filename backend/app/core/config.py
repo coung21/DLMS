@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # MinIO / S3 Storage
-    STORAGE_ENDPOINT: str = "localhost:9000"
+    STORAGE_ENDPOINT: str = "minio:9000"
+    STORAGE_PUBLIC_ENDPOINT: str = "localhost:9000"
     STORAGE_ACCESS_KEY: str = "minioadmin"
     STORAGE_SECRET_KEY: str = "minioadmin"
     STORAGE_BUCKET: str = "dlms-documents"

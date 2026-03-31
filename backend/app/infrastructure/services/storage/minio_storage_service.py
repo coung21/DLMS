@@ -39,16 +39,24 @@ class MinioStorageService(StorageService):
     async def get_presigned_url(self, file_path: str, expiration_minutes: int = 15, filename: str = None) -> str:
         from datetime import timedelta
         
+        # WE MUST USE THE PUBLIC ENDPOINT FOR SIGNING
+        # Otherwise the Host header in the signature won't match what the browser sends
+        signer = Minio(
+            settings.STORAGE_PUBLIC_ENDPOINT,
+            access_key=settings.STORAGE_ACCESS_KEY,
+            secret_key=settings.STORAGE_SECRET_KEY,
+            secure=settings.STORAGE_SECURE,
+            region="us-east-1",  # Bypass bucket location discovery network request
+        )
+
         extra_query_params = {}
         if filename:
-            # Force download with the original filename
-            # Note: We need to escape the filename to avoid issues with special characters
             import urllib.parse
             encoded_filename = urllib.parse.quote(filename)
             extra_query_params["response-content-disposition"] = f"attachment; filename=\"{encoded_filename}\"; filename*=UTF-8''{encoded_filename}"
 
-        # For public buckets or presigned URLs
-        return self.client.presigned_get_object(
+        # Generate the URL using the public-facing 'signer'
+        return signer.presigned_get_object(
             self.bucket_name,
             file_path,
             expires=timedelta(minutes=expiration_minutes),

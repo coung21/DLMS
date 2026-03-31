@@ -11,8 +11,8 @@ import { useAuthStore } from '../../../store/authStore';
 import { getProfile, login } from '../api/auth.api';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Địa chỉ email không hợp lệ'),
+  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
@@ -47,7 +47,7 @@ export const LoginForm = () => {
       navigate(from, { replace: true });
     },
     onError: (error: unknown) => {
-      setErrorDetails(getApiErrorMessage(error, 'Login failed. Please check your credentials.'));
+      setErrorDetails(getApiErrorMessage(error, 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'));
       useAuthStore.getState().logout();
     },
   });
@@ -60,16 +60,16 @@ export const LoginForm = () => {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
       <div className="mb-8 text-center sm:text-left">
         <h2 className="bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-3xl font-bold text-transparent">
-          Welcome back
+          Chào mừng trở lại
         </h2>
         <p className="mt-2 text-sm font-medium text-slate-500">
-          Please enter your details to sign in.
+          Vui lòng nhập thông tin để đăng nhập.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Email address</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Địa chỉ email</label>
           <div className="group relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Mail className="h-5 w-5" />
@@ -82,7 +82,7 @@ export const LoginForm = () => {
                   ? 'border-red-300 focus:ring-red-400'
                   : 'border-slate-200 focus:ring-slate-900/10'
               }`}
-              placeholder="you@example.com"
+              placeholder="ban@vidu.com"
             />
           </div>
           {errors.email && (
@@ -93,7 +93,7 @@ export const LoginForm = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Password</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Mật khẩu</label>
           <div className="group relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Lock className="h-5 w-5" />
@@ -125,13 +125,13 @@ export const LoginForm = () => {
               className="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900"
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm font-medium text-slate-700">
-              Remember me
+              Ghi nhớ đăng nhập
             </label>
           </div>
 
           <div className="text-sm">
             <a href="#" className="font-semibold text-slate-900 transition-colors hover:text-slate-700">
-              Forgot password?
+              Quên mật khẩu?
             </a>
           </div>
         </div>
@@ -156,13 +156,13 @@ export const LoginForm = () => {
           disabled={mutation.isPending}
           className="flex w-full justify-center rounded-xl border border-transparent bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Log In'}
+          {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Đăng nhập'}
         </button>
 
         <p className="mt-6 text-center text-sm font-medium text-slate-600">
-          Don&apos;t have an account?{' '}
+          Chưa có tài khoản?{' '}
           <Link to="/register" className="font-semibold text-slate-900 transition-colors hover:text-slate-700">
-            Sign up now
+            Đăng ký ngay
           </Link>
         </p>
       </form>

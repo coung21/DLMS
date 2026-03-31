@@ -6,10 +6,10 @@ export const TeacherPortalPage = () => (
     <div className="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
       <div className="flex items-center space-x-3 mb-6">
         <BookOpen className="w-10 h-10 text-emerald-500" />
-        <h1 className="text-3xl font-bold text-slate-900">Teacher Portal</h1>
+        <h1 className="text-3xl font-bold text-slate-900">Cổng giáo viên</h1>
       </div>
       <p className="text-slate-600 mb-8">
-        Manage your uploads and academic resources. Track the approval status of your submitted documents.
+        Quản lý tài liệu tải lên và tài nguyên học thuật của bạn. Theo dõi trạng thái phê duyệt của các tài liệu đã nộp.
       </p>
 
       <div className="grid grid-cols-1 gap-4 mb-8">
@@ -21,8 +21,8 @@ export const TeacherPortalPage = () => (
             <Upload className="w-6 h-6" />
           </div>
           <div className="ml-4">
-            <h3 className="font-bold text-slate-900 text-lg">Upload Document</h3>
-            <p className="text-sm text-slate-500">Share new resources with the library.</p>
+            <h3 className="font-bold text-slate-900 text-lg">Tải lên Tài liệu</h3>
+            <p className="text-sm text-slate-500">Chia sẻ tài liệu mới với thư viện.</p>
           </div>
         </Link>
 
@@ -36,15 +36,15 @@ export const TeacherPortalPage = () => (
             <FileStack className="w-6 h-6" />
           </div>
           <div className="ml-4">
-            <h3 className="font-bold text-slate-900 text-lg">My Documents</h3>
-            <p className="text-sm text-slate-500">Track status of your uploaded files.</p>
+            <h3 className="font-bold text-slate-900 text-lg">Tài liệu của tôi</h3>
+            <p className="text-sm text-slate-500">Theo dõi trạng thái các tệp đã tải lên của bạn.</p>
           </div>
         </Link>
       </div>
 
       <Link to="/" className="inline-flex items-center text-sm font-semibold text-slate-900 hover:underline mt-4">
         <LayoutDashboard className="w-4 h-4 mr-2" />
-        Back to Library Home
+        Quay lại Trang chủ Thư viện
       </Link>
     </div>
   </div>

@@ -1,48 +1,47 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BadgeInfo, CheckCircle2, FileText, Loader2, Upload } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { FileText, Loader2, Upload, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { getApiErrorMessage } from '../../../lib/api-error';
 import { uploadDocument } from '../api/document.api';
-import type { Document } from '../types';
+import { getCategories } from '../../categories/api/categories.api';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const allowedExtensions = ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'txt'] as const;
 
 const uploadSchema = z.object({
-  title: z.string().trim().min(1, 'Title is required'),
-  description: z.string().max(1000, 'Description is too long').optional().or(z.literal('')),
+  title: z.string().trim().min(1, 'Vui lòng nhập tiêu đề'),
+  description: z.string().max(1000, 'Mô tả quá dài').optional().or(z.literal('')),
   category_id: z
     .string()
     .trim()
     .optional()
     .or(z.literal(''))
-    .refine((value) => !value || z.uuid().safeParse(value).success, 'Category ID must be a valid UUID'),
+    .refine((value) => !value || z.uuid().safeParse(value).success, 'ID Danh mục phải là mã UUID hợp lệ'),
   file: z
-    .instanceof(File, { message: 'File is required' })
-    .refine((file) => file.size <= MAX_FILE_SIZE, 'File size must be 10MB or smaller')
+    .instanceof(File, { message: 'Vui lòng chọn tệp' })
+    .refine((file) => file.size <= MAX_FILE_SIZE, 'Kích thước tệp không được vượt quá 10MB')
     .refine((file) => {
       const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
       return allowedExtensions.includes(extension as (typeof allowedExtensions)[number]);
-    }, `Supported files: ${allowedExtensions.join(', ')}`),
+    }, `Tệp được hỗ trợ: ${allowedExtensions.join(', ')}`),
 });
 
 type UploadSchema = z.infer<typeof uploadSchema>;
 
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
 
 export const TeacherUploadForm = () => {
   const queryClient = useQueryClient();
   const [selectedFileName, setSelectedFileName] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadedDocument, setUploadedDocument] = useState<Document | null>(null);
+
+  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
 
   const {
     register,
@@ -52,12 +51,14 @@ export const TeacherUploadForm = () => {
     formState: { errors },
   } = useForm<UploadSchema>({
     resolver: zodResolver(uploadSchema),
+    defaultValues: {
+      category_id: '',
+    },
   });
 
   const mutation = useMutation({
     mutationFn: uploadDocument,
-    onSuccess: (document) => {
-      setUploadedDocument(document);
+    onSuccess: () => {
       setUploadError(null);
       setSelectedFileName('');
       queryClient.invalidateQueries({ queryKey: ['teacher-documents'] });
@@ -69,7 +70,7 @@ export const TeacherUploadForm = () => {
       });
     },
     onError: (error) => {
-      setUploadError(getApiErrorMessage(error, 'Upload failed. Please try again.'));
+      setUploadError(getApiErrorMessage(error, 'Tải lên thất bại. Vui lòng thử lại.'));
     },
   });
 
@@ -89,14 +90,13 @@ export const TeacherUploadForm = () => {
       <div className="flex flex-col gap-4 border-b border-emerald-100 pb-6">
         <div className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
           <Upload className="h-4 w-4" />
-          Upload new material
+          Tải lên tài liệu mới
         </div>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Publish a document to the library</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Xuất bản tài liệu lên thư viện</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              This form sends the current backend contract with <code>multipart/form-data</code> and attaches the
-              logged-in teacher as the uploader automatically.
+              Biểu mẫu này tải tệp lên server và tự động ghi nhận giáo viên đang đăng nhập là người tải lên.
             </p>
           </div>
 
@@ -108,11 +108,11 @@ export const TeacherUploadForm = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Document title</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Tiêu đề tài liệu</label>
           <input
             {...register('title')}
             type="text"
-            placeholder="Example: Discrete Mathematics Lecture 03"
+            placeholder="Ví dụ: Bài giảng Toán rời rạc 03"
             className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition focus:ring-4 ${
               errors.title ? 'border-red-300 focus:ring-red-100' : 'border-slate-200 focus:ring-emerald-100'
             }`}
@@ -122,24 +122,37 @@ export const TeacherUploadForm = () => {
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Category ID</label>
-            <input
-              {...register('category_id')}
-              type="text"
-              placeholder="Optional UUID"
-              className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition focus:ring-4 ${
-                errors.category_id ? 'border-red-300 focus:ring-red-100' : 'border-slate-200 focus:ring-emerald-100'
-              }`}
-            />
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Danh mục</label>
+            <div className="relative group">
+              <select
+                {...register('category_id')}
+                disabled={isLoadingCategories}
+                className={`block w-full appearance-none rounded-2xl border px-4 py-3 text-slate-900 outline-none transition focus:ring-4 pr-10 ${
+                  errors.category_id ? 'border-red-300 focus:ring-red-100' : 'border-slate-200 focus:ring-emerald-100'
+                } ${isLoadingCategories ? 'animate-pulse bg-slate-50' : 'bg-white'}`}
+              >
+                <option value="">Không có / Chưa phân loại</option>
+                {categoriesData?.items.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
+                <ChevronDown className="h-5 w-5" />
+              </div>
+            </div>
             {errors.category_id ? (
               <p className="mt-1.5 text-sm font-medium text-red-500">{errors.category_id.message}</p>
             ) : (
-              <p className="mt-1.5 text-xs text-slate-500">Leave empty if the document does not belong to a category yet.</p>
+              <p className="mt-1.5 text-xs text-slate-500">
+                {isLoadingCategories ? 'Đang tải danh mục...' : 'Chọn thư mục hoặc danh mục cho tài liệu của bạn.'}
+              </p>
             )}
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Document file</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Tệp tài liệu</label>
             <label
               className={`flex min-h-[52px] cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-3 transition ${
                 errors.file ? 'border-red-300 bg-red-50/60' : 'border-emerald-200 bg-emerald-50/70 hover:bg-emerald-50'
@@ -147,9 +160,9 @@ export const TeacherUploadForm = () => {
             >
               <FileText className="h-5 w-5 shrink-0 text-emerald-700" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700">
-                {selectedFileName || 'Choose PDF, DOCX, XLSX, JPG, PNG, or TXT'}
+                {selectedFileName || 'Chọn tệp PDF, DOCX, XLSX, JPG, PNG hoặc TXT'}
               </span>
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">Browse</span>
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">Duyệt</span>
               <input
                 type="file"
                 className="hidden"
@@ -164,17 +177,17 @@ export const TeacherUploadForm = () => {
             {errors.file ? (
               <p className="mt-1.5 text-sm font-medium text-red-500">{errors.file.message}</p>
             ) : (
-              <p className="mt-1.5 text-xs text-slate-500">Maximum file size is 10MB.</p>
+              <p className="mt-1.5 text-xs text-slate-500">Kích thước tệp tối đa là 10MB.</p>
             )}
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Description</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Mô tả</label>
           <textarea
             {...register('description')}
             rows={5}
-            placeholder="Summarize the document content, course, or intended usage."
+            placeholder="Tóm tắt nội dung tài liệu, khóa học hoặc mục đích sử dụng."
             className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition focus:ring-4 ${
               errors.description ? 'border-red-300 focus:ring-red-100' : 'border-slate-200 focus:ring-emerald-100'
             }`}
@@ -196,51 +209,9 @@ export const TeacherUploadForm = () => {
           className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
-          {mutation.isPending ? 'Uploading...' : 'Upload document'}
+          {mutation.isPending ? 'Đang tải lên...' : 'Tải lên tài liệu'}
         </button>
       </form>
-
-      <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-5 text-slate-50">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
-            <BadgeInfo className="h-4 w-4" />
-            API contract
-          </div>
-          <div className="space-y-3 text-sm leading-6 text-slate-300">
-            <p><strong className="text-white">Method:</strong> POST `/api/v1/documents/upload`</p>
-            <p><strong className="text-white">Body:</strong> multipart/form-data</p>
-            <p><strong className="text-white">Required:</strong> `file`, `title`</p>
-            <p><strong className="text-white">Optional:</strong> `description`, `category_id`</p>
-            <p><strong className="text-white">Extensions:</strong> {allowedExtensions.join(', ')}</p>
-            <p><strong className="text-white">Size:</strong> up to 10MB</p>
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/80 p-5">
-          <h3 className="text-lg font-bold text-slate-900">Latest upload result</h3>
-          {uploadedDocument ? (
-            <div className="mt-4 space-y-3 rounded-3xl bg-white p-5 shadow-sm">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />
-                <div>
-                  <p className="font-semibold text-slate-900">{uploadedDocument.title}</p>
-                  <p className="text-sm text-slate-600">Uploaded at {formatDate(uploadedDocument.created_at)}</p>
-                </div>
-              </div>
-              <div className="grid gap-3 text-sm text-slate-600">
-                <p><strong className="text-slate-900">ID:</strong> {uploadedDocument.id}</p>
-                <p><strong className="text-slate-900">Type:</strong> {uploadedDocument.file_type}</p>
-                <p><strong className="text-slate-900">Status:</strong> {uploadedDocument.status}</p>
-                <p><strong className="text-slate-900">File path:</strong> {uploadedDocument.file_path ?? 'N/A'}</p>
-              </div>
-            </div>
-          ) : (
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              After the backend returns `DocumentResponse`, the most recent upload will appear here for a quick confirmation.
-            </p>
-          )}
-        </div>
-      </div>
     </section>
   );
 };

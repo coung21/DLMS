@@ -25,11 +25,6 @@ enum DocumentStatus {
 enum DocumentType {
   PDF
   DOCX
-  EXCEL
-  TEXT
-  IMAGE
-  VIDEO
-  OTHER
 }
 
 entity "User" as User {

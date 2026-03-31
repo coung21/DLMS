@@ -43,7 +43,7 @@ export const PendingDocumentsTable = ({
                     <div className="inline-block">
                         <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-indigo-600 animate-spin"></div>
                     </div>
-                    <p className="text-slate-600 mt-4 font-semibold">Loading documents...</p>
+                    <p className="text-slate-600 mt-4 font-semibold">Đang tải tài liệu...</p>
                 </div>
             </div>
         );
@@ -53,8 +53,8 @@ export const PendingDocumentsTable = ({
         return (
             <div className="flex flex-col items-center justify-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
                 <FileText className="w-12 h-12 text-slate-400 mb-3" />
-                <p className="text-slate-600 font-semibold text-lg">No pending documents</p>
-                <p className="text-slate-500 text-sm">All documents have been reviewed!</p>
+                <p className="text-slate-600 font-semibold text-lg">Không có tài liệu chờ duyệt</p>
+                <p className="text-slate-500 text-sm">Tất cả các tài liệu đã được xem xét!</p>
             </div>
         );
     }
@@ -65,17 +65,17 @@ export const PendingDocumentsTable = ({
                 <table className="w-full">
                     <thead>
                         <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Title</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Tiêu đề</th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
-                                Uploaded By
+                                Người tải lên
                             </th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Type</th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Status</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Loại</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Trạng thái</th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
-                                Uploaded At
+                                Ngày tải lên
                             </th>
                             <th className="px-6 py-4 text-right text-sm font-semibold text-slate-700">
-                                Action
+                                Thao tác
                             </th>
                         </tr>
                     </thead>
@@ -97,7 +97,7 @@ export const PendingDocumentsTable = ({
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2 text-slate-600 text-sm">
                                         <User className="w-4 h-4 text-slate-400" />
-                                        <span className="font-mono text-xs truncate">{doc.uploaded_by || 'N/A'}</span>
+                                        <span className="font-mono text-xs truncate">{doc.uploaded_by || 'Trống'}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
@@ -123,11 +123,11 @@ export const PendingDocumentsTable = ({
                                             onClick={() => onReview(doc)}
                                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-sm transition-colors"
                                         >
-                                            Review
+                                            Duyệt
                                         </button>
                                     ) : (
                                         <span className="text-xs text-slate-500 font-semibold">
-                                            {doc.status === 'approved' ? '✓ Approved' : '✗ Rejected'}
+                                            {doc.status === 'approved' ? '✓ Đã duyệt' : '✗ Đã từ chối'}
                                         </span>
                                     )}
                                 </td>

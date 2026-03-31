@@ -10,12 +10,16 @@ import { getApiErrorMessage } from '../../../lib/api-error';
 import { register as registerApi } from '../api/auth.api';
 
 const registerSchema = z.object({
-  full_name: z.string().min(2, 'Full name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  full_name: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
+  email: z.string().email('Địa chỉ email không hợp lệ'),
   role: z.enum(['student', 'teacher'], {
-    message: 'Please select a valid role',
+    message: 'Vui lòng chọn vai trò hợp lệ',
   }),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
+  confirm_password: z.string().min(8, 'Xác nhận mật khẩu phải có ít nhất 8 ký tự'),
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Mật khẩu không khớp",
+  path: ['confirm_password'],
 });
 
 type RegisterSchema = z.infer<typeof registerSchema>;
@@ -42,38 +46,39 @@ export const RegisterForm = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: RegisterSchema) => registerApi(data),
+    mutationFn: registerApi,
     onSuccess: (data) => {
       const message =
         data.role === 'teacher'
-          ? 'Registration successful! Teacher accounts require admin approval before login.'
-          : 'Registration successful! Please login.';
+          ? 'Đăng ký thành công! Tài khoản giáo viên cần được admin phê duyệt trước khi đăng nhập.'
+          : 'Đăng ký thành công! Vui lòng đăng nhập.';
 
       navigate('/login', { state: { message } });
     },
     onError: (error: unknown) => {
-      setErrorDetails(getApiErrorMessage(error, 'Registration failed. Please try again.'));
+      setErrorDetails(getApiErrorMessage(error, 'Đăng ký thất bại. Vui lòng thử lại.'));
     },
   });
 
   const onSubmit = (data: RegisterSchema) => {
-    mutation.mutate(data);
+    const { confirm_password, ...rest } = data; // remove confirm_password
+    mutation.mutate(rest);
   };
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
       <div className="mb-8 text-center sm:text-left">
         <h2 className="bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-3xl font-bold text-transparent">
-          Create an account
+          Tạo tài khoản
         </h2>
         <p className="mt-2 text-sm font-medium text-slate-500">
-          Join us today and explore thousands of books.
+          Tham gia cùng chúng tôi hôm nay và khám phá hàng ngàn cuốn sách.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Full Name</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Họ và tên</label>
           <div className="group relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <User className="h-5 w-5" />
@@ -86,7 +91,7 @@ export const RegisterForm = () => {
                   ? 'border-red-300 focus:ring-red-400'
                   : 'border-slate-200 focus:ring-slate-900/10'
               }`}
-              placeholder="John Doe"
+              placeholder="Nguyễn Văn A"
             />
           </div>
           {errors.full_name && (
@@ -97,7 +102,7 @@ export const RegisterForm = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Email address</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Địa chỉ email</label>
           <div className="group relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Mail className="h-5 w-5" />
@@ -110,7 +115,7 @@ export const RegisterForm = () => {
                   ? 'border-red-300 focus:ring-red-400'
                   : 'border-slate-200 focus:ring-slate-900/10'
               }`}
-              placeholder="you@example.com"
+              placeholder="ban@vidu.com"
             />
           </div>
           {errors.email && (
@@ -121,7 +126,7 @@ export const RegisterForm = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">You are a...</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Bạn là...</label>
           <div className="group relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Users className="h-5 w-5" />
@@ -134,8 +139,8 @@ export const RegisterForm = () => {
                   : 'border-slate-200 focus:ring-slate-900/10'
               }`}
             >
-              <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
+              <option value="student">Sinh viên</option>
+              <option value="teacher">Giáo viên</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,13 +156,13 @@ export const RegisterForm = () => {
           {selectedRole === 'teacher' && (
             <p className="mt-1.5 flex items-center gap-1 animate-in fade-in text-xs font-medium text-amber-600">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Teacher accounts require admin approval before login.
+              Tài khoản giáo viên cần được admin phê duyệt trước khi đăng nhập.
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Password</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Mật khẩu</label>
           <div className="group relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Lock className="h-5 w-5" />
@@ -176,6 +181,30 @@ export const RegisterForm = () => {
           {errors.password && (
             <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
               {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Xác nhận mật khẩu</label>
+          <div className="group relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
+              <Lock className="h-5 w-5" />
+            </div>
+            <input
+              {...register('confirm_password')}
+              type="password"
+              className={`block w-full rounded-xl border bg-white py-2.5 pl-11 pr-3 font-medium text-slate-900 transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none focus:ring-4 ${
+                errors.confirm_password
+                  ? 'border-red-300 focus:ring-red-400'
+                  : 'border-slate-200 focus:ring-slate-900/10'
+              }`}
+              placeholder="********"
+            />
+          </div>
+          {errors.confirm_password && (
+            <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
+              {errors.confirm_password.message}
             </p>
           )}
         </div>
@@ -200,13 +229,13 @@ export const RegisterForm = () => {
           disabled={mutation.isPending}
           className="mt-2 flex w-full justify-center rounded-xl border border-transparent bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Create Account'}
+          {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Đăng ký'}
         </button>
 
         <p className="mt-6 text-center text-sm font-medium text-slate-600">
-          Already have an account?{' '}
+          Đã có tài khoản?{' '}
           <Link to="/login" className="font-semibold text-slate-900 transition-colors hover:text-slate-700">
-            Log in
+            Đăng nhập
           </Link>
         </p>
       </form>

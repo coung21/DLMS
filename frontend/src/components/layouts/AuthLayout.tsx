@@ -19,10 +19,10 @@ export const AuthLayout = () => {
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide-library"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-300">
-            Digital Library Management
+            Quản lý Thư viện Số
           </h1>
           <p className="text-lg text-slate-300 leading-relaxed font-light">
-            Access thousands of books, journals, and articles anywhere, anytime. Join our community of readers.
+            Truy cập hàng ngàn cuốn sách, tạp chí và bài báo ở bất cứ đâu, bất cứ lúc nào. Hãy tham gia cộng đồng độc giả của chúng tôi.
           </p>
         </div>
       </div>

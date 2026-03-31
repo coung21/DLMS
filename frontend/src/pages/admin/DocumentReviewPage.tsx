@@ -27,7 +27,7 @@ export const DocumentReviewPage = () => {
             setDocuments(response.items);
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : 'Failed to load documents'
+                err instanceof Error ? err.message : 'Không thể tải tài liệu'
             );
             console.error('Error fetching documents:', err);
         } finally {
@@ -47,7 +47,7 @@ export const DocumentReviewPage = () => {
         try {
             setIsReviewLoading(true);
             await approveDocument(selectedDocument.id, comment);
-            setSuccessMessage(`✓ Document "${selectedDocument.title}" has been approved!`);
+            setSuccessMessage(`✓ Tài liệu "${selectedDocument.title}" đã được phê duyệt!`);
             setSelectedDocument(null);
             fetchDocuments(); // Refresh list
 
@@ -55,7 +55,7 @@ export const DocumentReviewPage = () => {
             setTimeout(() => setSuccessMessage(null), 3000);
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : 'Failed to approve document'
+                err instanceof Error ? err.message : 'Không thể phê duyệt tài liệu'
             );
             console.error('Error approving document:', err);
         } finally {
@@ -70,7 +70,7 @@ export const DocumentReviewPage = () => {
         try {
             setIsReviewLoading(true);
             await rejectDocument(selectedDocument.id, comment);
-            setSuccessMessage(`✗ Document "${selectedDocument.title}" has been rejected.`);
+            setSuccessMessage(`✗ Tài liệu "${selectedDocument.title}" đã bị từ chối.`);
             setSelectedDocument(null);
             fetchDocuments(); // Refresh list
 
@@ -78,7 +78,7 @@ export const DocumentReviewPage = () => {
             setTimeout(() => setSuccessMessage(null), 3000);
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : 'Failed to reject document'
+                err instanceof Error ? err.message : 'Không thể từ chối tài liệu'
             );
             console.error('Error rejecting document:', err);
         } finally {
@@ -95,9 +95,9 @@ export const DocumentReviewPage = () => {
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
                         <FileText className="w-8 h-8 text-indigo-600" />
-                        <h1 className="text-4xl font-bold text-slate-900">Document Review</h1>
+                        <h1 className="text-4xl font-bold text-slate-900">Duyệt Tài liệu</h1>
                     </div>
-                    <p className="text-slate-600">Review and approve/reject documents uploaded by teachers</p>
+                    <p className="text-slate-600">Xem xét và phê duyệt/từ chối các tài liệu do giáo viên tải lên</p>
                 </div>
 
                 {/* Success Message */}
@@ -121,15 +121,15 @@ export const DocumentReviewPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-                        <p className="text-sm text-slate-600 font-semibold">Pending Review</p>
+                        <p className="text-sm text-slate-600 font-semibold">Chờ duyệt</p>
                         <p className="text-3xl font-bold text-amber-600 mt-2">{pendingCount}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-                        <p className="text-sm text-slate-600 font-semibold">Total Documents</p>
+                        <p className="text-sm text-slate-600 font-semibold">Tổng số tài liệu</p>
                         <p className="text-3xl font-bold text-slate-900 mt-2">{documents.length}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-                        <p className="text-sm text-slate-600 font-semibold">Processed/Reviewed</p>
+                        <p className="text-sm text-slate-600 font-semibold">Đã xử lý/đã duyệt</p>
                         <p className="text-3xl font-bold text-indigo-600 mt-2">
                             {documents.filter((d) => d.status !== 'pending').length}
                         </p>
@@ -142,7 +142,7 @@ export const DocumentReviewPage = () => {
                         <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Search by title or description..."
+                            placeholder="Tìm kiếm theo tiêu đề hoặc mô tả..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-4 py-2 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"

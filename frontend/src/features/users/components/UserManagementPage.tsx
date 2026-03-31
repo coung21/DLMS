@@ -39,7 +39,7 @@ export const UserManagementPage: React.FC = () => {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center">
         <AlertCircle className="w-5 h-5 mr-2" />
-        Failed to load users. Please try again later.
+        Không thể tải người dùng. Vui lòng thử lại sau.
       </div>
     );
   }
@@ -61,14 +61,14 @@ export const UserManagementPage: React.FC = () => {
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
-            <p className="text-slate-500 text-sm">Manage user roles, accounts, and system access.</p>
+            <h1 className="text-2xl font-bold text-slate-900">Quản lý Người dùng</h1>
+            <p className="text-slate-500 text-sm">Quản lý vai trò, tài khoản và quyền truy cập hệ thống của người dùng.</p>
           </div>
         </div>
         <button 
           onClick={() => refetch()}
           className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
-          title="Refresh List"
+          title="Làm mới danh sách"
         >
           <RefreshCcw className="w-5 h-5" />
         </button>
@@ -79,11 +79,11 @@ export const UserManagementPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Joined</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Người dùng</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Vai trò</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng thái</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày tham gia</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -108,9 +108,9 @@ export const UserManagementPage: React.FC = () => {
                         className="text-xs bg-transparent border-none focus:ring-0 p-0 cursor-pointer font-medium text-slate-700 hover:text-indigo-600"
                         disabled={updateMutation.isPending}
                       >
-                        <option value="student">Student</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="admin">Admin</option>
+                        <option value="student">Học viên</option>
+                        <option value="teacher">Giáo viên</option>
+                        <option value="admin">Quản trị viên</option>
                       </select>
                     </div>
                   </td>
@@ -145,7 +145,7 @@ export const UserManagementPage: React.FC = () => {
                             ? 'text-rose-600 bg-rose-50 border-rose-100 hover:bg-rose-100'
                             : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-100'
                         }`}
-                        title={user.status === 'active' ? 'Suspend User' : 'Activate User'}
+                        title={user.status === 'active' ? 'Đình chỉ người dùng' : 'Kích hoạt người dùng'}
                       >
                         {user.status === 'active' ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
                       </button>

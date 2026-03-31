@@ -16,23 +16,23 @@ import type { Document, DocumentType, DocumentStatus } from '../../features/docu
 
 const statusCopy: Record<DocumentStatus, { label: string; className: string }> = {
   pending: {
-    label: 'Pending Approval',
+    label: 'Chờ duyệt',
     className: 'bg-amber-100 text-amber-700 border-amber-200',
   },
   approved: {
-    label: 'Published',
+    label: 'Đã xuất bản',
     className: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   },
   rejected: {
-    label: 'Rejected',
+    label: 'Bị từ chối',
     className: 'bg-rose-100 text-rose-700 border-rose-200',
   },
   archived: {
-    label: 'Archived',
+    label: 'Đã lưu trữ',
     className: 'bg-slate-100 text-slate-700 border-slate-200',
   },
   deleted: {
-    label: 'Deleted',
+    label: 'Đã xóa',
     className: 'bg-slate-100 text-slate-400 border-slate-200',
   },
 };
@@ -58,11 +58,11 @@ export const TeacherDocumentsPage = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteDocument(id),
     onSuccess: () => {
-      alert('Document deleted successfully');
+      alert('Xóa tài liệu thành công');
       queryClient.invalidateQueries({ queryKey: ['my-documents'] });
     },
     onError: () => {
-      alert('Failed to delete document');
+      alert('Không thể xóa tài liệu');
     }
   });
 
@@ -81,25 +81,25 @@ export const TeacherDocumentsPage = () => {
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">My Uploaded Documents</h1>
-            <p className="mt-2 text-slate-500">Manage and track the status of your shared resources.</p>
+            <h1 className="text-3xl font-bold text-slate-900">Tài liệu tôi đã tải lên</h1>
+            <p className="mt-2 text-slate-500">Quản lý và theo dõi trạng thái các tài nguyên bạn đã chia sẻ.</p>
           </div>
           <Link 
             to="/teacher" 
             className="inline-flex items-center text-sm font-semibold text-slate-900 hover:underline"
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            Teacher Portal
+            Cổng giáo viên
           </Link>
         </div>
 
         {documents.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
             <File className="mx-auto h-12 w-12 text-slate-300" />
-            <h3 className="mt-4 text-lg font-semibold text-slate-900">No documents yet</h3>
-            <p className="mt-2 text-slate-500 text-sm">Start by uploading your first document to the library.</p>
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">Chưa có tài liệu nào</h3>
+            <p className="mt-2 text-slate-500 text-sm">Bắt đầu bằng cách tải lên tài liệu đầu tiên của bạn vào thư viện.</p>
             <Link to="/teacher/upload" className="mt-6 inline-flex rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700">
-              Upload Now
+              Tải lên ngay
             </Link>
           </div>
         ) : (
@@ -107,9 +107,9 @@ export const TeacherDocumentsPage = () => {
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Document</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Upload Date</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Tài liệu</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Trạng thái</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Ngày tải lên</th>
                   <th className="px-6 py-4 text-right"></th>
                 </tr>
               </thead>
@@ -138,7 +138,7 @@ export const TeacherDocumentsPage = () => {
                         {doc.status === 'rejected' && doc.review_comment && (
                            <div className="mt-1 flex items-center text-[10px] text-rose-500 font-medium">
                              <AlertCircle className="mr-1 h-3 w-3" />
-                             Reason: {doc.review_comment}
+                             Lý do: {doc.review_comment}
                            </div>
                         )}
                       </td>
@@ -148,7 +148,7 @@ export const TeacherDocumentsPage = () => {
                       <td className="px-6 py-4 text-right">
                         <button 
                           onClick={() => {
-                            if (window.confirm('Delete this document?')) {
+                            if (window.confirm('Xóa tài liệu này?')) {
                               deleteMutation.mutate(doc.id);
                             }
                           }}

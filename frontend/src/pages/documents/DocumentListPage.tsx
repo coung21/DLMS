@@ -30,23 +30,23 @@ const PAGE_SIZE = 6;
 
 const statusCopy = {
   pending: {
-    label: 'Pending',
+    label: 'Đang chờ duyệt',
     className: 'border border-amber-200 bg-amber-50 text-amber-700',
   },
   approved: {
-    label: 'Approved',
+    label: 'Đã duyệt',
     className: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
   },
   rejected: {
-    label: 'Rejected',
+    label: 'Từ chối',
     className: 'border border-rose-200 bg-rose-50 text-rose-700',
   },
   archived: {
-    label: 'Archived',
+    label: 'Lưu trữ',
     className: 'border border-slate-200 bg-slate-50 text-slate-700',
   },
   deleted: {
-    label: 'Deleted',
+    label: 'Đã xóa',
     className: 'border border-slate-200 bg-slate-50 text-slate-700',
   },
 };
@@ -56,9 +56,9 @@ const typeCopy: Record<DocumentType, string> = {
   docx: 'DOCX',
   excel: 'Excel',
   text: 'Text',
-  image: 'Image',
+  image: 'Hình ảnh',
   video: 'Video',
-  other: 'Other',
+  other: 'Khác',
 };
 
 const documentIcons: Record<DocumentType, LucideIcon> = {
@@ -101,7 +101,7 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
       window.open(url, '_blank', 'noreferrer');
     } catch (error) {
       console.error('Failed to get preview URL:', error);
-      alert('Could not open preview. Please try again later.');
+      alert('Không thể mở bản xem trước. Vui lòng thử lại sau.');
     } finally {
       setIsOpening(false);
     }
@@ -124,7 +124,7 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
       link.remove();
     } catch (error) {
       console.error('Failed to get download URL:', error);
-      alert('Could not start download. Please try again later.');
+      alert('Không thể bắt đầu tải xuống. Vui lòng thử lại sau.');
     } finally {
       setIsDownloading(false);
     }
@@ -147,16 +147,16 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
         </p>
         <h3 className="mt-2 text-xl font-semibold text-slate-900">{document.title}</h3>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          {document.description || 'No description has been added yet.'}
+          {document.description || 'Chưa có mô tả nào được thêm.'}
         </p>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-          Updated {formatDate(document.updated_at)}
+          Cập nhật {formatDate(document.updated_at)}
         </span>
         <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-700">
-          Added {formatDate(document.created_at)}
+          Tạo lúc {formatDate(document.created_at)}
         </span>
       </div>
 
@@ -170,7 +170,7 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
               <button
                 onClick={handleDownload}
                 disabled={isDownloading || isOpening}
-                title="Download file"
+                title="Tải tệp"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900 disabled:opacity-50"
               >
                 {isDownloading ? (
@@ -199,12 +199,12 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
                 className="inline-flex h-9 items-center rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900 disabled:opacity-50"
               >
                 {isOpening ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
-                {isOpening ? 'Loading...' : 'Open file'}
+                {isOpening ? 'Đang tải...' : 'Mở tệp'}
               </button>
             </>
           ) : (
             <span className="rounded-full border border-dashed border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-400">
-              File unavailable
+              Tệp không khả dụng
             </span>
           )}
         </div>
@@ -271,23 +271,23 @@ export const DocumentListPage = () => {
 
   const query = useQuery({
     queryKey: ['documents', page, searchQueryParam, activeCategoryId, sortBy],
-    queryFn: () => getDocuments({ 
-      skip, 
-      limit: PAGE_SIZE, 
-      search: searchQueryParam || undefined, 
-      categoryId: activeCategoryId, 
-      sortBy 
+    queryFn: () => getDocuments({
+      skip,
+      limit: PAGE_SIZE,
+      search: searchQueryParam || undefined,
+      categoryId: activeCategoryId,
+      sortBy
     }),
     placeholderData: keepPreviousData,
   });
 
   const documents = query.data?.items ?? [];
   const totalDocuments = query.data?.total ?? 0;
-  
+
   const effectiveTotal = totalDocuments;
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / PAGE_SIZE));
   const visiblePages = buildPageNumbers(page, totalPages);
-  
+
   const currentStart = effectiveTotal === 0 ? 0 : skip + 1;
   const currentEnd = effectiveTotal === 0 ? 0 : skip + documents.length;
   const availableCount = documents.filter((document) => document.status === 'approved').length;
@@ -311,23 +311,22 @@ export const DocumentListPage = () => {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-100/80">
-                  Digital library
+                  Thư viện số
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-5xl">
-                  Curated documents for students and lecturers.
+                  Tài liệu chọn lọc dành cho sinh viên và giảng viên.
                 </h1>
                 <p className="mt-4 max-w-xl text-sm leading-7 text-slate-200 sm:text-base">
-                  Browse digital resources, explore recent uploads, and move through the collection
-                  page by page without losing context.
+                  Duyệt tìm tài nguyên số, khám phá các nội dung tải lên gần đây, và xem qua từng trang bộ sưu tập mà không bị mất ngữ cảnh.
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                 <div className="rounded-3xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-                    Signed in as
+                    Đăng nhập dưới tên
                   </p>
-                  <p className="mt-1 text-lg font-semibold">{user?.full_name || 'Library user'}</p>
+                  <p className="mt-1 text-lg font-semibold">{user?.full_name || 'Người dùng thư viện'}</p>
                   <p className="text-sm text-slate-300">{user?.email}</p>
                 </div>
                 <button
@@ -335,7 +334,7 @@ export const DocumentListPage = () => {
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/20"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                  Đăng xuất
                 </button>
               </div>
             </div>
@@ -343,26 +342,26 @@ export const DocumentListPage = () => {
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-3xl border border-white/12 bg-white/10 p-4 backdrop-blur">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-                  Total documents
+                  Tổng số tài liệu
                 </p>
                 <p className="mt-3 text-3xl font-semibold">{totalDocuments}</p>
-                <p className="mt-1 text-sm text-slate-300">Across the digital shelf</p>
+                <p className="mt-1 text-sm text-slate-300">Trong toàn thư viện</p>
               </div>
               <div className="rounded-3xl border border-white/12 bg-white/10 p-4 backdrop-blur">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-                  Page coverage
+                  Tài liệu trên trang
                 </p>
                 <p className="mt-3 text-3xl font-semibold">
                   {currentStart}-{currentEnd}
                 </p>
-                <p className="mt-1 text-sm text-slate-300">Items visible right now</p>
+                <p className="mt-1 text-sm text-slate-300">Mục đang hiển thị</p>
               </div>
               <div className="rounded-3xl border border-white/12 bg-white/10 p-4 backdrop-blur">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-                  Available on page
+                  Khả dụng trên trang
                 </p>
                 <p className="mt-3 text-3xl font-semibold">{availableCount}</p>
-                <p className="mt-1 text-sm text-slate-300">Ready to access immediately</p>
+                <p className="mt-1 text-sm text-slate-300">Sẵn sàng truy cập ngay</p>
               </div>
             </div>
           </div>
@@ -373,11 +372,11 @@ export const DocumentListPage = () => {
             <div className="flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
-                  Collection view
+                  Chế độ xem bộ sưu tập
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Document list</h2>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Danh sách tài liệu</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Showing {currentStart}-{currentEnd} of {totalDocuments} documents.
+                  Hiển thị {currentStart}-{currentEnd} trên tổng số {totalDocuments} tài liệu.
                 </p>
               </div>
 
@@ -388,7 +387,7 @@ export const DocumentListPage = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setSearchQuery(event.target.value)}
-                    placeholder="Search documents..."
+                    placeholder="Tìm kiếm tài liệu..."
                     className="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all text-sm font-medium"
                   />
                 </div>
@@ -397,10 +396,10 @@ export const DocumentListPage = () => {
                   onChange={(e: any) => updateParams({ sort: e.target.value, page: '1' })}
                   className="rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-colors"
                 >
-                  <option value="created_at_desc">Newest First</option>
-                  <option value="created_at_asc">Oldest First</option>
-                  <option value="title_asc">Title A-Z</option>
-                  <option value="title_desc">Title Z-A</option>
+                  <option value="created_at_desc">Mới nhất trước</option>
+                  <option value="created_at_asc">Cũ nhất trước</option>
+                  <option value="title_asc">Tiêu đề A-Z</option>
+                  <option value="title_desc">Tiêu đề Z-A</option>
                 </select>
                 <button
                   onClick={() => {
@@ -409,7 +408,7 @@ export const DocumentListPage = () => {
                   }}
                   className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-900 hover:text-rose-900"
                 >
-                  <span className="">Reset Filter</span>
+                  <span className="">Bỏ lọc</span>
                 </button>
                 <button
                   onClick={() => query.refetch()}
@@ -420,21 +419,21 @@ export const DocumentListPage = () => {
                   ) : (
                     <RefreshCw className="mr-2 h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">Refresh</span>
+                  <span className="hidden sm:inline">Làm mới</span>
                 </button>
               </div>
             </div>
 
-             <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
-                <span 
-                  onClick={() => updateParams({ category: null, page: '1' })}
-                  className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${null === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
-                >
-                  All Categories
-                </span>
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+              <span
+                onClick={() => updateParams({ category: null, page: '1' })}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${null === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
+              >
+                Tất cả danh mục
+              </span>
               {categories.map((cat: { id: string, name: string }) => (
-                <span 
-                  key={cat.id} 
+                <span
+                  key={cat.id}
                   onClick={() => updateParams({ category: cat.id, page: '1' })}
                   className={`px-4 py-1.5 text-xs font-semibold rounded-full cursor-pointer transition-colors whitespace-nowrap ${cat.id === activeCategoryId ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'}`}
                 >
@@ -457,17 +456,17 @@ export const DocumentListPage = () => {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-600" />
                   <div>
-                    <h3 className="text-lg font-semibold text-rose-800">Unable to load documents</h3>
+                    <h3 className="text-lg font-semibold text-rose-800">Không thể tải tài liệu</h3>
                     <p className="mt-2 text-sm leading-6 text-rose-700">
                       {query.error instanceof Error
                         ? query.error.message
-                        : 'The document service did not return data.'}
+                        : 'Dịch vụ tài liệu không trả về dữ liệu.'}
                     </p>
                     <button
                       onClick={() => query.refetch()}
                       className="mt-4 inline-flex items-center rounded-full bg-rose-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-800"
                     >
-                      Try again
+                      Thử lại
                     </button>
                   </div>
                 </div>
@@ -477,9 +476,9 @@ export const DocumentListPage = () => {
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-white shadow-sm">
                   <BookOpen className="h-8 w-8 text-slate-400" />
                 </div>
-                <h3 className="mt-5 text-xl font-semibold text-slate-900">No documents yet</h3>
+                <h3 className="mt-5 text-xl font-semibold text-slate-900">Chưa có tài liệu nào</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Start uploading resources and they will appear here with pagination support.
+                  Bắt đầu tải lên tài liệu và chúng sẽ xuất hiện ở đây với tính năng phân trang.
                 </p>
               </div>
             ) : (
@@ -492,7 +491,7 @@ export const DocumentListPage = () => {
 
             <div className="mt-8 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-slate-500">
-                Page {page} of {totalPages}
+                Trang {page} / {totalPages}
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -502,18 +501,17 @@ export const DocumentListPage = () => {
                   className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft className="mr-1 h-4 w-4" />
-                  Prev
+                  Trước
                 </button>
 
                 {visiblePages.map((pageNumber) => (
                   <button
                     key={pageNumber}
                     onClick={() => updatePage(pageNumber)}
-                    className={`h-11 min-w-11 rounded-full px-4 text-sm font-semibold transition-colors ${
-                      pageNumber === page
+                    className={`h-11 min-w-11 rounded-full px-4 text-sm font-semibold transition-colors ${pageNumber === page
                         ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
                         : 'border border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     {pageNumber}
                   </button>
@@ -524,7 +522,7 @@ export const DocumentListPage = () => {
                   disabled={page === totalPages}
                   className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Next
+                  Tiếp
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </button>
               </div>
@@ -534,7 +532,7 @@ export const DocumentListPage = () => {
           <aside className="space-y-4">
             <div className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-[0_24px_70px_-58px_rgba(15,23,42,0.45)]">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
-                Reader profile
+                Hồ sơ người đọc
               </p>
               <div className="mt-4 flex items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-lg font-semibold text-slate-900">
@@ -547,14 +545,11 @@ export const DocumentListPage = () => {
                   </p>
                 </div>
               </div>
-              <p className="mt-4 text-sm leading-6 text-slate-500">
-                The home feed is now focused on the digital collection instead of the placeholder dashboard.
-              </p>
             </div>
 
             <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eff6ff_100%)] p-5 shadow-[0_24px_70px_-58px_rgba(15,23,42,0.4)]">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
-                Quick access
+                Truy cập nhanh
               </p>
               <div className="mt-4 space-y-3">
                 {(user?.role === 'admin' || user?.role === 'teacher') && (
@@ -564,7 +559,7 @@ export const DocumentListPage = () => {
                   >
                     <span className="inline-flex items-center">
                       <BookOpen className="mr-3 h-4 w-4" />
-                      Teacher workspace
+                      Không gian giáo viên
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>
@@ -577,7 +572,7 @@ export const DocumentListPage = () => {
                   >
                     <span className="inline-flex items-center">
                       <ShieldCheck className="mr-3 h-4 w-4" />
-                      Admin area
+                      Khu vực quản trị
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>

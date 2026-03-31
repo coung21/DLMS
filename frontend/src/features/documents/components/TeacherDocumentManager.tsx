@@ -106,11 +106,11 @@ export const TeacherDocumentManager = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-documents'] });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      setFeedback({ tone: 'success', message: 'Document details updated.' });
+      setFeedback({ tone: 'success', message: 'Đã cập nhật chi tiết tài liệu.' });
       closeEditor();
     },
     onError: (error) => {
-      setFeedback({ tone: 'error', message: getApiErrorMessage(error, 'Unable to update the document.') });
+      setFeedback({ tone: 'error', message: getApiErrorMessage(error, 'Không thể cập nhật tài liệu.') });
     },
     onSettled: () => {
       setUpdatingDocumentId(null);
@@ -136,10 +136,10 @@ export const TeacherDocumentManager = () => {
 
       queryClient.invalidateQueries({ queryKey: ['teacher-documents'] });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      setFeedback({ tone: 'success', message: 'Document deleted.' });
+      setFeedback({ tone: 'success', message: 'Đã xóa tài liệu.' });
     },
     onError: (error) => {
-      setFeedback({ tone: 'error', message: getApiErrorMessage(error, 'Unable to delete the document.') });
+      setFeedback({ tone: 'error', message: getApiErrorMessage(error, 'Không thể xóa tài liệu.') });
     },
     onSettled: () => {
       setDeletingDocumentId(null);
@@ -158,7 +158,7 @@ export const TeacherDocumentManager = () => {
   const handleSave = (documentId: string) => {
     const normalizedTitle = editDraft.title.trim();
     if (!normalizedTitle) {
-      setFeedback({ tone: 'error', message: 'Title is required.' });
+      setFeedback({ tone: 'error', message: 'Vui lòng nhập tiêu đề.' });
       return;
     }
 
@@ -172,7 +172,7 @@ export const TeacherDocumentManager = () => {
   };
 
   const handleDelete = (document: Document) => {
-    if (window.confirm(`Delete "${document.title}" from your library uploads?`)) {
+    if (window.confirm(`Xóa "${document.title}" khỏi thư viện của bạn?`)) {
       deleteMutation.mutate(document.id);
     }
   };
@@ -184,12 +184,11 @@ export const TeacherDocumentManager = () => {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">
               <FileText className="h-4 w-4" />
-              My documents
+              Tài liệu của tôi
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">Edit or remove your uploads</h2>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">Chỉnh sửa hoặc xóa tài liệu tải lên của bạn</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              This panel only loads documents uploaded by the current teacher account, then lets you revise the
-              metadata or remove the file from the library.
+              Bảng điều khiển này chỉ hiển thị các tài liệu được tải lên bởi tài khoản giáo viên hiện tại, cho phép bạn chỉnh sửa siêu dữ liệu hoặc xóa tệp.
             </p>
           </div>
 
@@ -198,7 +197,7 @@ export const TeacherDocumentManager = () => {
             className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900"
           >
             {query.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            Refresh
+            Làm mới
           </button>
         </div>
 
@@ -208,7 +207,7 @@ export const TeacherDocumentManager = () => {
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search your documents"
+              placeholder="Tìm kiếm tài liệu của bạn"
               className="w-full rounded-full border border-slate-200 bg-slate-50 px-10 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-900/10"
             />
           </label>
@@ -218,24 +217,24 @@ export const TeacherDocumentManager = () => {
             onChange={(event) => setSortBy(event.target.value)}
             className="rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-900/10"
           >
-            <option value="created_at_desc">Newest first</option>
-            <option value="created_at_asc">Oldest first</option>
-            <option value="title_asc">Title A-Z</option>
-            <option value="title_desc">Title Z-A</option>
+            <option value="created_at_desc">Mới nhất trước</option>
+            <option value="created_at_asc">Cũ nhất trước</option>
+            <option value="title_asc">Tiêu đề A-Z</option>
+            <option value="title_desc">Tiêu đề Z-A</option>
           </select>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Owned documents</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Tài liệu sở hữu</p>
             <p className="mt-2 text-3xl font-semibold text-slate-950">{totalDocuments}</p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Current page</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Trang hiện tại</p>
             <p className="mt-2 text-3xl font-semibold text-slate-950">{page}</p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Visible range</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Mục hiển thị</p>
             <p className="mt-2 text-3xl font-semibold text-slate-950">
               {currentStart}-{currentEnd}
             </p>
@@ -269,9 +268,9 @@ export const TeacherDocumentManager = () => {
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-600" />
             <div>
-              <h3 className="text-lg font-semibold text-rose-800">Unable to load your documents</h3>
+              <h3 className="text-lg font-semibold text-rose-800">Không thể tải tài liệu của bạn</h3>
               <p className="mt-2 text-sm leading-6 text-rose-700">
-                {query.error instanceof Error ? query.error.message : 'The teacher document feed is unavailable.'}
+                {query.error instanceof Error ? query.error.message : 'Nguồn cung cấp tài liệu cho giáo viên hiện không khả dụng.'}
               </p>
             </div>
           </div>
@@ -281,9 +280,9 @@ export const TeacherDocumentManager = () => {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-3xl bg-white shadow-sm">
             <FileText className="h-7 w-7 text-slate-400" />
           </div>
-          <h3 className="mt-5 text-xl font-semibold text-slate-900">No personal uploads yet</h3>
+          <h3 className="mt-5 text-xl font-semibold text-slate-900">Chưa có tài liệu cá nhân nào</h3>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Upload your first document from the form on this page, then come back here to edit or remove it.
+            Tải lên tài liệu đầu tiên của bạn từ biểu mẫu trên trang này, sau đó quay lại đây để chỉnh sửa hoặc xóa.
           </p>
         </div>
       ) : (
@@ -312,7 +311,7 @@ export const TeacherDocumentManager = () => {
                     {isEditing ? (
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Title</label>
+                          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Tiêu đề</label>
                           <input
                             value={editDraft.title}
                             onChange={(event) => setEditDraft((current) => ({ ...current, title: event.target.value }))}
@@ -320,7 +319,7 @@ export const TeacherDocumentManager = () => {
                           />
                         </div>
                         <div>
-                          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Description</label>
+                          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Mô tả</label>
                           <textarea
                             rows={4}
                             value={editDraft.description}
@@ -335,14 +334,14 @@ export const TeacherDocumentManager = () => {
                       <>
                         <h3 className="mt-4 text-2xl font-semibold text-slate-950">{document.title}</h3>
                         <p className="mt-3 text-sm leading-6 text-slate-600">
-                          {document.description || 'No description has been added yet.'}
+                          {document.description || 'Chưa có mô tả nào được thêm.'}
                         </p>
                       </>
                     )}
 
                     <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium text-slate-500">
-                      <span className="rounded-full bg-white px-3 py-1 shadow-sm">Created {formatDate(document.created_at)}</span>
-                      <span className="rounded-full bg-white px-3 py-1 shadow-sm">Updated {formatDate(document.updated_at)}</span>
+                      <span className="rounded-full bg-white px-3 py-1 shadow-sm">Đã tạo {formatDate(document.created_at)}</span>
+                      <span className="rounded-full bg-white px-3 py-1 shadow-sm">Đã cập nhật {formatDate(document.updated_at)}</span>
                     </div>
                   </div>
 
@@ -354,7 +353,7 @@ export const TeacherDocumentManager = () => {
                         rel="noreferrer"
                         className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900"
                       >
-                        Open file
+                        Mở tệp
                       </a>
                     ) : null}
 
@@ -366,7 +365,7 @@ export const TeacherDocumentManager = () => {
                           className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          Save
+                          Lưu
                         </button>
                         <button
                           onClick={closeEditor}
@@ -374,7 +373,7 @@ export const TeacherDocumentManager = () => {
                           className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
                         >
                           <X className="mr-2 h-4 w-4" />
-                          Cancel
+                          Hủy
                         </button>
                       </>
                     ) : (
@@ -384,7 +383,7 @@ export const TeacherDocumentManager = () => {
                           className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:border-amber-300"
                         >
                           <PencilLine className="mr-2 h-4 w-4" />
-                          Edit
+                          Sửa
                         </button>
                         <button
                           onClick={() => handleDelete(document)}
@@ -392,7 +391,7 @@ export const TeacherDocumentManager = () => {
                           className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                          Delete
+                          Xóa
                         </button>
                       </>
                     )}
@@ -406,7 +405,7 @@ export const TeacherDocumentManager = () => {
 
       <div className="mt-8 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-500">
-          Page {page} of {totalPages}
+          Trang {page} / {totalPages}
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -416,7 +415,7 @@ export const TeacherDocumentManager = () => {
             className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronLeft className="mr-1 h-4 w-4" />
-            Prev
+            Trước
           </button>
 
           {visiblePages.map((pageNumber) => (
@@ -438,7 +437,7 @@ export const TeacherDocumentManager = () => {
             disabled={page === totalPages}
             className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Next
+            Tiếp
             <ChevronRight className="ml-1 h-4 w-4" />
           </button>
         </div>
@@ -447,7 +446,7 @@ export const TeacherDocumentManager = () => {
       {feedback?.tone === 'success' && !query.isError && (
         <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
           <CheckCircle2 className="h-4 w-4" />
-          Workspace synced with your latest action.
+          Không gian làm việc đã đồng bộ với thao tác mới nhất của bạn.
         </div>
       )}
     </section>

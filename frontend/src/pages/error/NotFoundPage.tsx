@@ -15,9 +15,9 @@ export const NotFoundPage = () => {
         </div>
         
         <div className="space-y-3">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Page Not Found</h1>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Không tìm thấy trang</h1>
           <p className="text-slate-500 font-medium leading-relaxed">
-            The page you are looking for doesn't exist or has been moved.
+            Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
           </p>
         </div>
 
@@ -27,7 +27,7 @@ export const NotFoundPage = () => {
             className="inline-flex items-center justify-center px-5 py-2.5 border border-slate-200 rounded-xl shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all active:scale-[0.98]"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Go Back
+            Quay lại
           </button>
           
           <Link
@@ -35,7 +35,7 @@ export const NotFoundPage = () => {
             className="inline-flex items-center justify-center px-5 py-2.5 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all active:scale-[0.98]"
           >
             <Home className="w-4 h-4 mr-2" />
-            Dashboard
+            Trang chủ
           </Link>
         </div>
       </div>

@@ -77,7 +77,7 @@ export const CategoryManagementPage: React.FC = () => {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete category "${name}"? This might affect documents using this category.`)) {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"? Điều này có thể ảnh hưởng đến các tài liệu đang sử dụng danh mục này.`)) {
       deleteMutation.mutate(id);
     }
   };
@@ -94,7 +94,7 @@ export const CategoryManagementPage: React.FC = () => {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center">
         <AlertCircle className="w-5 h-5 mr-2" />
-        Failed to load categories. Please try again later.
+        Không thể tải danh mục. Vui lòng thử lại sau.
       </div>
     );
   }
@@ -107,15 +107,15 @@ export const CategoryManagementPage: React.FC = () => {
             <FolderTree className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Category Management</h1>
-            <p className="text-slate-500 text-sm">Organize documents by creating and managing categories.</p>
+            <h1 className="text-2xl font-bold text-slate-900">Quản lý Danh mục</h1>
+            <p className="text-slate-500 text-sm">Tổ chức tài liệu bằng cách tạo và quản lý các danh mục.</p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <button 
             onClick={() => refetch()}
             className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
-            title="Refresh List"
+            title="Làm mới danh sách"
           >
             <RefreshCcw className="w-5 h-5" />
           </button>
@@ -124,7 +124,7 @@ export const CategoryManagementPage: React.FC = () => {
             className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all font-semibold"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Category</span>
+            <span>Thêm Danh mục</span>
           </button>
         </div>
       </div>
@@ -134,10 +134,10 @@ export const CategoryManagementPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tên</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô tả</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày tạo</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -148,7 +148,7 @@ export const CategoryManagementPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-slate-600 max-w-md truncate">
-                      {category.description || <span className="text-slate-400 italic">No description</span>}
+                      {category.description || <span className="text-slate-400 italic">Không có mô tả</span>}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500">
@@ -159,7 +159,7 @@ export const CategoryManagementPage: React.FC = () => {
                        <button
                         onClick={() => openModal(category)}
                         className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-all"
-                        title="Edit Category"
+                        title="Sửa Danh mục"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
@@ -167,7 +167,7 @@ export const CategoryManagementPage: React.FC = () => {
                         onClick={() => handleDelete(category.id, category.name)}
                         disabled={deleteMutation.isPending}
                         className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all"
-                        title="Delete Category"
+                        title="Xóa Danh mục"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -178,7 +178,7 @@ export const CategoryManagementPage: React.FC = () => {
               {data?.items.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                    No categories found. Click "Add Category" to create one.
+                    Không tìm thấy danh mục nào. Nhấp vào "Thêm Danh mục" để tạo.
                   </td>
                 </tr>
               )}
@@ -193,7 +193,7 @@ export const CategoryManagementPage: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">
-                {editingCategory ? 'Edit Category' : 'Add New Category'}
+                {editingCategory ? 'Chỉnh sửa Danh mục' : 'Thêm Danh mục mới'}
               </h2>
               <button 
                 onClick={closeModal}
@@ -205,23 +205,23 @@ export const CategoryManagementPage: React.FC = () => {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Category Name</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tên danh mục</label>
                 <input 
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Computer Science"
+                  placeholder="Ví dụ: Khoa học Máy tính"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Mô tả</label>
                 <textarea 
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Briefly describe what documents belong here..."
+                  placeholder="Mô tả ngắn gọn về các tài liệu thuộc danh mục này..."
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium resize-none"
                 />
               </div>
@@ -232,7 +232,7 @@ export const CategoryManagementPage: React.FC = () => {
                   <span>
                     {getApiErrorMessage(
                       createMutation.error ?? updateMutation.error,
-                      'Something went wrong. Please try again.',
+                      'Đã xảy ra lỗi. Vui lòng thử lại.',
                     )}
                   </span>
                 </div>
@@ -244,7 +244,7 @@ export const CategoryManagementPage: React.FC = () => {
                   onClick={closeModal}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button 
                   type="submit"
@@ -254,7 +254,7 @@ export const CategoryManagementPage: React.FC = () => {
                   {(createMutation.isPending || updateMutation.isPending) ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : <CheckCircle2 className="w-4 h-4" />}
-                  <span>{editingCategory ? 'Update' : 'Create'}</span>
+                  <span>{editingCategory ? 'Cập nhật' : 'Tạo'}</span>
                 </button>
               </div>
             </form>

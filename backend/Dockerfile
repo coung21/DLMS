@@ -21,7 +21,7 @@ WORKDIR /app
 # Copy installed packages từ builder
 COPY --from=builder /install /usr/local
 
-# Copy source code
+# Invalidate cache for source code - Timestamp: 1455
 COPY app/ ./app/
 COPY tests/ ./tests/
 COPY alembic.ini pytest.ini ./
