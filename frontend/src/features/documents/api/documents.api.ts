@@ -68,3 +68,13 @@ export const reviewDocument = async (
   const response = await axiosInstance.post<Document>(`/documents/${id}/review`, payload);
   return response.data;
 };
+
+export const getDocumentPreviewUrl = async (id: string): Promise<string> => {
+  const response = await axiosInstance.get<{ url: string }>(`/documents/${id}/preview`);
+  return response.data.url;
+};
+
+export const getDocumentDownloadUrl = async (id: string): Promise<string> => {
+  const response = await axiosInstance.get<{ url: string }>(`/documents/${id}/download`);
+  return response.data.url;
+};

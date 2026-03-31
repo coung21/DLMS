@@ -20,6 +20,7 @@ from app.application.use_cases.manage_document_use_cases import DeleteDocumentUs
 from app.application.use_cases.upload_document_use_case import UploadDocumentUseCase
 from app.application.use_cases.get_pending_documents_use_case import GetPendingDocumentsUseCase
 from app.application.use_cases.review_document_use_case import ReviewDocumentUseCase
+from app.application.use_cases.preview_document_use_case import PreviewDocumentUseCase
 from app.domain.enums import UserRole, DocumentStatus
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -195,6 +196,91 @@ async def reject_document(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
+            )
+
+
+@router.get("/{document_id}/preview")
+async def preview_document(
+    document_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)),
+    current_user_role: UserRole = Depends(get_current_user_role),
+):
+    """
+    Generate a presigned URL for document preview.
+    - Approved documents can be previewed by everyone.
+    - Pending/Rejected documents can only be previewed by uploader or Admin.
+    """
+    repository = DocumentRepositoryImpl(db)
+    document = await repository.find_by_id(document_id)
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    # Permission check
+    if document.status != DocumentStatus.APPROVED:
+        if current_user_role != UserRole.ADMIN and document.uploaded_by != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to preview this document until it's approved.",
+            )
+
+    storage_service = MinioStorageService()
+    use_case = PreviewDocumentUseCase(repository, storage_service)
+    
+    try:
+        url = await use_case.execute(document_id)
+        return {"url": url}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating preview URL: {str(e)}"
+        )
+
+
+@router.get("/{document_id}/download")
+async def download_document(
+    document_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: UUID = Depends(require_roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)),
+    current_user_role: UserRole = Depends(get_current_user_role),
+):
+    """
+    Generate a presigned URL for document download with original filename.
+    """
+    repository = DocumentRepositoryImpl(db)
+    document = await repository.find_by_id(document_id)
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    # Permission check (Same as preview for now)
+    if document.status != DocumentStatus.APPROVED:
+        if current_user_role != UserRole.ADMIN and document.uploaded_by != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to download this document until it's approved.",
+            )
+
+    storage_service = MinioStorageService()
+    # We directly use the storage service here to pass the filename
+    try:
+        url = await storage_service.get_presigned_url(
+            document.file_path, 
+            expiration_minutes=15,
+            filename=document.original_file_name or document.title
+        )
+        return {"url": url}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating download URL: {str(e)}"
         )
 
 

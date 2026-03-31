@@ -36,12 +36,23 @@ class MinioStorageService(StorageService):
         )
         return filename
 
-    async def get_file_url(self, file_path: str) -> str:
+    async def get_presigned_url(self, file_path: str, expiration_minutes: int = 15, filename: str = None) -> str:
+        from datetime import timedelta
+        
+        extra_query_params = {}
+        if filename:
+            # Force download with the original filename
+            # Note: We need to escape the filename to avoid issues with special characters
+            import urllib.parse
+            encoded_filename = urllib.parse.quote(filename)
+            extra_query_params["response-content-disposition"] = f"attachment; filename=\"{encoded_filename}\"; filename*=UTF-8''{encoded_filename}"
+
         # For public buckets or presigned URLs
-        return self.client.get_presigned_url(
-            "GET",
+        return self.client.presigned_get_object(
             self.bucket_name,
             file_path,
+            expires=timedelta(minutes=expiration_minutes),
+            extra_query_params=extra_query_params
         )
 
     async def delete_file(self, file_path: str) -> bool:

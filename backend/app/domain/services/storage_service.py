@@ -13,9 +13,9 @@ class StorageService(ABC):
         pass
 
     @abstractmethod
-    async def get_file_url(self, file_path: str) -> str:
+    async def get_presigned_url(self, file_path: str, expiration_minutes: int = 15, filename: str = None) -> str:
         """
-        Get the public URL for a file.
+        Get a presigned URL for a file. If filename is provided, it should trigger a download with that name.
         """
         pass
 

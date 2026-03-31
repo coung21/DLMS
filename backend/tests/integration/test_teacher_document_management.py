@@ -152,3 +152,64 @@ async def test_teacher_can_delete_their_own_document():
     app.dependency_overrides.clear()
 
     assert response.status_code == 204
+@pytest.mark.asyncio
+async def test_teacher_can_get_preview_url():
+    teacher_id = uuid.uuid4()
+    document = make_document(uploaded_by=teacher_id)
+    document.status = DocumentStatus.APPROVED
+
+    app.dependency_overrides[oauth2_scheme] = lambda: "valid_teacher_token"
+    app.dependency_overrides[get_current_user_id] = lambda: teacher_id
+
+    with patch("app.api.v1.dependencies.auth.decode_token") as mock_decode, patch(
+        "app.api.v1.endpoints.documents.DocumentRepositoryImpl.find_by_id",
+        new_callable=AsyncMock,
+    ) as mock_find_by_id, patch(
+        "app.api.v1.endpoints.documents.MinioStorageService.get_presigned_url",
+        new_callable=AsyncMock,
+    ) as mock_get_url:
+        mock_decode.return_value = {"role": "teacher", "sub": str(teacher_id), "type": "access"}
+        mock_find_by_id.return_value = document
+        mock_get_url.return_value = "http://minio:9000/presigned-url"
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get(f"{BASE}/{document.id}/preview")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["url"] == "http://minio:9000/presigned-url"
+
+
+@pytest.mark.asyncio
+async def test_teacher_can_get_download_url():
+    teacher_id = uuid.uuid4()
+    document = make_document(uploaded_by=teacher_id)
+    document.status = DocumentStatus.APPROVED
+
+    app.dependency_overrides[oauth2_scheme] = lambda: "valid_teacher_token"
+    app.dependency_overrides[get_current_user_id] = lambda: teacher_id
+
+    with patch("app.api.v1.dependencies.auth.decode_token") as mock_decode, patch(
+        "app.api.v1.endpoints.documents.DocumentRepositoryImpl.find_by_id",
+        new_callable=AsyncMock,
+    ) as mock_find_by_id, patch(
+        "app.api.v1.endpoints.documents.MinioStorageService.get_presigned_url",
+        new_callable=AsyncMock,
+    ) as mock_get_url:
+        mock_decode.return_value = {"role": "teacher", "sub": str(teacher_id), "type": "access"}
+        mock_find_by_id.return_value = document
+        mock_get_url.return_value = "http://minio:9000/download-url"
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get(f"{BASE}/{document.id}/download")
+
+        # Verify that get_presigned_url was called with the filename
+        mock_get_url.assert_called_once()
+        args, kwargs = mock_get_url.call_args
+        assert kwargs["filename"] == (document.original_file_name or document.title)
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["url"] == "http://minio:9000/download-url"

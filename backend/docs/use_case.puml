@@ -1,0 +1,39 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Student
+actor Teacher
+actor Admin
+
+Teacher --|> Student
+
+rectangle "Digital Library Management System (DLMS)" {
+  (Đăng ký tài khoản) as Register
+  (Đăng nhập) as Login
+  (Xem danh sách tài liệu đã duyệt) as ViewDocuments
+  (Tìm kiếm tài liệu) as Search
+  (Xem danh mục) as ViewCategories
+  
+  (Tải lên tài liệu) as Upload
+  (Quản lý tài liệu cá nhân) as ManageOwnDocs
+  
+  (Phê duyệt/Từ chối tài liệu) as ReviewDocs
+  (Quản lý danh mục) as ManageCategories
+  (Quản lý người dùng) as ManageUsers
+}
+
+Student --> Register
+Student --> Login
+Student --> ViewDocuments
+Student --> Search
+Student --> ViewCategories
+
+Teacher --> Upload
+Teacher --> ManageOwnDocs
+
+Admin --> ReviewDocs
+Admin --> ManageCategories
+Admin --> ManageUsers
+
+@enduml

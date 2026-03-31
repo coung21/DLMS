@@ -1,12 +1,12 @@
 from uuid import UUID
 
 from app.domain.repositories.document_repository import DocumentRepository
-from app.application.interfaces.storage import IStorageService
+from app.domain.services.storage_service import StorageService
 from app.core.exceptions import EntityNotFoundError, DocumentUnavailableError
 
 
 class PreviewDocumentUseCase:
-    def __init__(self, repository: DocumentRepository, storage_service: IStorageService):
+    def __init__(self, repository: DocumentRepository, storage_service: StorageService):
         self.repository = repository
         self.storage_service = storage_service
 
