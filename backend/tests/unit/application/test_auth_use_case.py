@@ -1,8 +1,9 @@
-"""Unit tests cho AuthUseCase.register – mock repository, không cần DB."""
-import pytest
+"""Unit tests for AuthUseCase.register without touching the database."""
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
-from datetime import datetime
+
+import pytest
 
 from app.application.schemas import RegisterRequest, UserResponse
 from app.application.use_cases.auth_use_case import AuthUseCase
@@ -27,8 +28,8 @@ def make_user(**kwargs) -> User:
 @pytest.fixture
 def mock_repo():
     repo = MagicMock()
-    repo.get_by_email = AsyncMock(return_value=None)   # default: email chưa tồn tại
-    repo.create = AsyncMock(side_effect=lambda u: u)   # trả lại chính user đó
+    repo.get_by_email = AsyncMock(return_value=None)
+    repo.create = AsyncMock(side_effect=lambda user: user)
     return repo
 
 
@@ -37,16 +38,14 @@ def use_case(mock_repo):
     return AuthUseCase(user_repo=mock_repo)
 
 
-# ─── Happy path ──────────────────────────────────────────────────────────
-
 @pytest.mark.asyncio
 async def test_register_success(use_case, mock_repo):
-    """Register thành công → trả về UserResponse đúng dữ liệu."""
     payload = RegisterRequest(
         email="newuser@example.com",
         password="securepass123",
         full_name="New User",
     )
+
     result = await use_case.register(payload)
 
     assert isinstance(result, UserResponse)
@@ -59,25 +58,37 @@ async def test_register_success(use_case, mock_repo):
 
 @pytest.mark.asyncio
 async def test_register_password_is_hashed(use_case, mock_repo):
-    """Password raw không được lưu vào User entity."""
-    raw_password = "securepass123"
     payload = RegisterRequest(
         email="user@example.com",
-        password=raw_password,
+        password="securepass123",
         full_name="User",
     )
+
     await use_case.register(payload)
 
     created_user: User = mock_repo.create.call_args[0][0]
-    assert created_user.hashed_password != raw_password
-    assert created_user.hashed_password.startswith("$2b$")  # bcrypt prefix
+    assert created_user.hashed_password != "securepass123"
+    assert created_user.hashed_password.startswith("$2b$")
 
 
-# ─── Error cases ─────────────────────────────────────────────────────────
+@pytest.mark.asyncio
+async def test_register_teacher_role_is_preserved(use_case, mock_repo):
+    payload = RegisterRequest(
+        email="teacher@example.com",
+        password="securepass123",
+        full_name="Teacher User",
+        role=UserRole.TEACHER,
+    )
+
+    result = await use_case.register(payload)
+
+    created_user: User = mock_repo.create.call_args[0][0]
+    assert created_user.role == UserRole.TEACHER
+    assert result.role == UserRole.TEACHER
+
 
 @pytest.mark.asyncio
 async def test_register_duplicate_email_raises(use_case, mock_repo):
-    """Email đã tồn tại → raise DuplicateEntityError, không gọi create."""
     existing = make_user(email="existing@example.com")
     mock_repo.get_by_email = AsyncMock(return_value=existing)
 
@@ -86,6 +97,7 @@ async def test_register_duplicate_email_raises(use_case, mock_repo):
         password="securepass123",
         full_name="Someone",
     )
+
     with pytest.raises(DuplicateEntityError) as exc_info:
         await use_case.register(payload)
 

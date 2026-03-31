@@ -3,6 +3,14 @@ from fastapi import APIRouter, Depends, Query, Path
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.dependencies.auth import get_current_user_role, require_roles
+from app.application.schemas.document import (
+    DocumentListResponse, 
+    DocumentResponse, 
+    DocumentUpdateRequest,
+    ReviewDocumentRequest,
+    PendingDocumentsResponse,
+)
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.document_repository_impl import DocumentRepositoryImpl
 from app.infrastructure.services.storage.minio_service import MinioStorageService
@@ -15,10 +23,24 @@ from app.application.schemas.document import DocumentListResponse, DocumentRespo
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
+def _ensure_document_access(document: DocumentResponse, current_user_id: UUID, current_user_role: UserRole) -> None:
+    if current_user_role == UserRole.ADMIN:
+        return
+
+    if document.uploaded_by != current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage documents you uploaded.",
+        )
+
+
 @router.get("", response_model=DocumentListResponse)
 async def get_documents(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
+    category_id: Optional[UUID] = Query(None),
+    search: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
     # current_user = Depends(get_current_user), # Optional: Add authentication if needed
 ):

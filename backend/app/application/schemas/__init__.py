@@ -5,8 +5,17 @@ from .auth import (
     RefreshTokenRequest as RefreshTokenRequest,
     UserCreate as UserCreate,
     UserResponse as UserResponse,
+    UserUpdate as UserUpdate,
+    UserListResponse as UserListResponse,
+)
+from .category import (
+    CategoryCreate as CategoryCreate,
+    CategoryUpdate as CategoryUpdate,
+    CategoryResponse as CategoryResponse,
+    CategoryListResponse as CategoryListResponse,
 )
 from .document import (
     DocumentResponse as DocumentResponse,
     DocumentListResponse as DocumentListResponse,
+    DocumentUpdateRequest as DocumentUpdateRequest,
 )

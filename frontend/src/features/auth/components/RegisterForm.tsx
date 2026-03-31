@@ -1,15 +1,20 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
-import { register as registerApi } from '../api/auth.api';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Lock, Mail, User, Users } from 'lucide-react';
+import { useForm, useWatch } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+
+import { getApiErrorMessage } from '../../../lib/api-error';
+import { register as registerApi } from '../api/auth.api';
 
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
+  role: z.enum(['student', 'teacher'], {
+    message: 'Please select a valid role',
+  }),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -19,30 +24,35 @@ export const RegisterForm = () => {
   const navigate = useNavigate();
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterSchema>({
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'student',
+    },
+  });
+
+  const selectedRole = useWatch({
+    control,
+    name: 'role',
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: RegisterSchema) => {
-      const { ...credentials } = data;
-      return await registerApi(credentials);
+    mutationFn: async (data: RegisterSchema) => registerApi(data),
+    onSuccess: (data) => {
+      const message =
+        data.role === 'teacher'
+          ? 'Registration successful! Teacher accounts require admin approval before login.'
+          : 'Registration successful! Please login.';
+
+      navigate('/login', { state: { message } });
     },
-    onSuccess: () => {
-      // Chuyển hướng về login sau khi đăng ký thành công
-      navigate('/login', { state: { message: 'Registration successful! Please login.' } });
-    },
-    onError: (error: any) => {
-      const detail = error.response?.data?.detail;
-      const message = typeof detail === 'string' 
-        ? detail 
-        : Array.isArray(detail) 
-          ? detail[0]?.msg || JSON.stringify(detail[0])
-          : typeof detail === 'object' && detail !== null
-            ? detail.msg || JSON.stringify(detail)
-            : 'Registration failed. Please try again.';
-      
-      setErrorDetails(message);
+    onError: (error: unknown) => {
+      setErrorDetails(getApiErrorMessage(error, 'Registration failed. Please try again.'));
     },
   });
 
@@ -53,64 +63,134 @@ export const RegisterForm = () => {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
       <div className="mb-8 text-center sm:text-left">
-        <h2 className="text-3xl font-bold bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-transparent">Create an account</h2>
-        <p className="mt-2 text-sm text-slate-500 font-medium">Join us today and explore thousands of books.</p>
+        <h2 className="bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-3xl font-bold text-transparent">
+          Create an account
+        </h2>
+        <p className="mt-2 text-sm font-medium text-slate-500">
+          Join us today and explore thousands of books.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Full Name</label>
+          <div className="group relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <User className="h-5 w-5" />
             </div>
             <input
               {...register('full_name')}
               type="text"
-              className={`block w-full pl-11 pr-3 py-2.5 border ${errors.full_name ? 'border-red-300 focus:ring-red-400' : 'border-slate-200 focus:ring-slate-900/10'} rounded-xl focus:outline-none focus:ring-4 transition-all bg-white font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal`}
+              className={`block w-full rounded-xl border bg-white py-2.5 pl-11 pr-3 font-medium text-slate-900 transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none focus:ring-4 ${
+                errors.full_name
+                  ? 'border-red-300 focus:ring-red-400'
+                  : 'border-slate-200 focus:ring-slate-900/10'
+              }`}
               placeholder="John Doe"
             />
           </div>
-          {errors.full_name && <p className="mt-1.5 text-sm text-red-500 font-medium animate-in fade-in">{errors.full_name.message}</p>}
+          {errors.full_name && (
+            <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
+              {errors.full_name.message}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Email address</label>
+          <div className="group relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Mail className="h-5 w-5" />
             </div>
             <input
               {...register('email')}
               type="email"
-              className={`block w-full pl-11 pr-3 py-2.5 border ${errors.email ? 'border-red-300 focus:ring-red-400' : 'border-slate-200 focus:ring-slate-900/10'} rounded-xl focus:outline-none focus:ring-4 transition-all bg-white font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal`}
+              className={`block w-full rounded-xl border bg-white py-2.5 pl-11 pr-3 font-medium text-slate-900 transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none focus:ring-4 ${
+                errors.email
+                  ? 'border-red-300 focus:ring-red-400'
+                  : 'border-slate-200 focus:ring-slate-900/10'
+              }`}
               placeholder="you@example.com"
             />
           </div>
-          {errors.email && <p className="mt-1.5 text-sm text-red-500 font-medium animate-in fade-in">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-600 transition-colors">
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">You are a...</label>
+          <div className="group relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
+              <Users className="h-5 w-5" />
+            </div>
+            <select
+              {...register('role')}
+              className={`block w-full appearance-none rounded-xl border bg-white py-2.5 pl-11 pr-10 font-medium text-slate-900 transition-all focus:outline-none focus:ring-4 ${
+                errors.role
+                  ? 'border-red-300 focus:ring-red-400'
+                  : 'border-slate-200 focus:ring-slate-900/10'
+              }`}
+            >
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+          {errors.role && (
+            <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
+              {errors.role.message}
+            </p>
+          )}
+          {selectedRole === 'teacher' && (
+            <p className="mt-1.5 flex items-center gap-1 animate-in fade-in text-xs font-medium text-amber-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Teacher accounts require admin approval before login.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Password</label>
+          <div className="group relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 transition-colors group-focus-within:text-slate-600">
               <Lock className="h-5 w-5" />
             </div>
             <input
               {...register('password')}
               type="password"
-              className={`block w-full pl-11 pr-3 py-2.5 border ${errors.password ? 'border-red-300 focus:ring-red-400' : 'border-slate-200 focus:ring-slate-900/10'} rounded-xl focus:outline-none focus:ring-4 transition-all bg-white font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal`}
-              placeholder="••••••••"
+              className={`block w-full rounded-xl border bg-white py-2.5 pl-11 pr-3 font-medium text-slate-900 transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none focus:ring-4 ${
+                errors.password
+                  ? 'border-red-300 focus:ring-red-400'
+                  : 'border-slate-200 focus:ring-slate-900/10'
+              }`}
+              placeholder="********"
             />
           </div>
-          {errors.password && <p className="mt-1.5 text-sm text-red-500 font-medium animate-in fade-in">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="mt-1.5 animate-in fade-in text-sm font-medium text-red-500">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         {errorDetails && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm font-medium rounded-xl border border-red-100 flex items-start animate-in fade-in">
-             <div className="shrink-0 mr-2 mt-0.5">
-                <svg className="h-4 w-4 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-             </div>
+          <div className="animate-in fade-in flex items-start rounded-xl border border-red-100 bg-red-50 p-3 text-sm font-medium text-red-600">
+            <div className="mr-2 mt-0.5 shrink-0">
+              <svg className="h-4 w-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
             {errorDetails}
           </div>
         )}
@@ -118,14 +198,14 @@ export const RegisterForm = () => {
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98] mt-2"
+          className="mt-2 flex w-full justify-center rounded-xl border border-transparent bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {mutation.isPending ? <Loader2 className="animate-spin h-5 w-5" /> : 'Create Account'}
+          {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Create Account'}
         </button>
 
-        <p className="text-center text-sm text-slate-600 mt-6 font-medium">
+        <p className="mt-6 text-center text-sm font-medium text-slate-600">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-slate-900 hover:text-slate-700 transition-colors">
+          <Link to="/login" className="font-semibold text-slate-900 transition-colors hover:text-slate-700">
             Log in
           </Link>
         </p>
