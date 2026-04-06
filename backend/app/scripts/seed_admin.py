@@ -38,7 +38,10 @@ async def seed_admin():
             await db.commit()
             print(f"Admin user '{admin_email}' created with password 'adminpassword123'.")
         else:
-            print(f"Admin user '{admin_email}' already exists.")
+            # "Cưỡng chế" cập nhật mật khẩu mới cho tài khoản đã có
+            admin_user.hashed_password = hash_password("adminpassword123")
+            await db.commit()
+            print(f"Admin user '{admin_email}' exists - Password has been RESET to 'adminpassword123'.")
 
 if __name__ == "__main__":
     asyncio.run(seed_admin())
