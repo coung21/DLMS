@@ -38,7 +38,7 @@ services:
     networks:
       - dlms-network
     healthcheck:
-      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/localhost/9000' || exit 1"]
+      test: [ "CMD-SHELL", "bash -c ':> /dev/tcp/localhost/9000' || exit 1" ]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -75,7 +75,7 @@ services:
       - dlms-network
     # Đã gỡ bỏ volume logs để tránh lỗi Permission denied
 
-  # FrontEnd React + Vite (Dùng Nginx cho Production)
+    # FrontEnd React + Vite (Dùng Nginx cho Production)
   frontend:
     build:
       context: ./frontend

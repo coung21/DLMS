@@ -45,7 +45,7 @@ class MinioStorageService(StorageService):
             settings.STORAGE_PUBLIC_ENDPOINT,
             access_key=settings.STORAGE_ACCESS_KEY,
             secret_key=settings.STORAGE_SECRET_KEY,
-            secure=settings.STORAGE_SECURE,
+            secure=True,
             region="us-east-1",  # Bypass bucket location discovery network request
         )
 
