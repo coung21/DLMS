@@ -18,7 +18,7 @@ import {
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
-import { getDocuments, getDocumentPreviewUrl, getDocumentDownloadUrl } from '../../features/documents/api/documents.api';
+import { getDocuments, getDocumentPreviewUrl /*, getDocumentDownloadUrl*/ } from '../../features/documents/api/documents.api';
 import { getCategories } from '../../features/categories/api/categories.api';
 import type {
   DocumentItem,
@@ -90,7 +90,7 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
   const Icon = documentIcons[document.file_type];
   const status = statusCopy[document.status];
   const [isOpening, setIsOpening] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  // const [isDownloading, setIsDownloading] = useState(false);
 
   const handleOpenPreview = async () => {
     if (!document.file_path || isOpening) return;
@@ -107,28 +107,28 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
     }
   };
 
-  const handleDownload = async () => {
-    if (!document.file_path || isDownloading) return;
+  // const handleDownload = async () => {
+  //   if (!document.file_path || isDownloading) return;
 
-    setIsDownloading(true);
-    try {
-      const url = await getDocumentDownloadUrl(document.id);
-      // Create a temporary link and click it to trigger download
-      const link = window.document.createElement('a');
-      link.href = url;
-      // We don't strictly need link.download here because the backend sets Content-Disposition,
-      // but it doesn't hurt as a hint if the browser supports it for cross-origin.
-      link.setAttribute('download', document.original_file_name || document.title);
-      window.document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error('Failed to get download URL:', error);
-      alert('Không thể bắt đầu tải xuống. Vui lòng thử lại sau.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+  //   setIsDownloading(true);
+  //   try {
+  //     const url = await getDocumentDownloadUrl(document.id);
+  //     // Create a temporary link and click it to trigger download
+  //     const link = window.document.createElement('a');
+  //     link.href = url;
+  //     // We don't strictly need link.download here because the backend sets Content-Disposition,
+  //     // but it doesn't hurt as a hint if the browser supports it for cross-origin.
+  //     link.setAttribute('download', document.original_file_name || document.title);
+  //     window.document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //   } catch (error) {
+  //     console.error('Failed to get download URL:', error);
+  //     alert('Không thể bắt đầu tải xuống. Vui lòng thử lại sau.');
+  //   } finally {
+  //     setIsDownloading(false);
+  //   }
+  // };
 
   return (
     <article className="group rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.55)] transition-transform duration-200 hover:-translate-y-1 hover:border-slate-300">
@@ -196,7 +196,7 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
               </button> */}
               <button
                 onClick={handleOpenPreview}
-                disabled={isOpening || isDownloading}
+                disabled={isOpening}
                 className="inline-flex h-9 items-center rounded-full border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-900 hover:text-slate-900 disabled:opacity-50"
               >
                 {isOpening ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
