@@ -28,10 +28,11 @@ services:
     environment:
       MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:-minioadmin}
       MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:-minioadmin}
-    command: server /data --console-address ":9001"
+    # Đổi sang cổng 9002 để tránh bị trùng
+    command: server /data --console-address ":9002"
     ports:
       - "9000:9000"
-      - "9001:9001"
+      - "9002:9002" 
     volumes:
       - dlms_minio_data:/data
     networks:
