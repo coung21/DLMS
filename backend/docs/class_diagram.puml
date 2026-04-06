@@ -1,0 +1,84 @@
+@startuml
+skinparam linetype ortho
+
+package "Domain Entities" {
+    enum UserRole {
+        ADMIN
+        TEACHER
+        STUDENT
+    }
+
+    enum UserStatus {
+        ACTIVE
+        INACTIVE
+        SUSPENDED
+    }
+
+    enum DocumentStatus {
+        PENDING
+        APPROVED
+        REJECTED
+        ARCHIVED
+        DELETED
+    }
+
+    enum DocumentType {
+        PDF
+        DOCX
+        EXCEL
+        TEXT
+        IMAGE
+        VIDEO
+        OTHER
+    }
+
+    class User <<dataclass>> {
+        + id: UUID
+        + email: str
+        + hashed_password: str
+        + full_name: str
+        + phone: str
+        + role: UserRole
+        + status: UserStatus
+        + avatar_url: str?
+        + max_loans: int
+        + created_at: datetime
+        + updated_at: datetime
+        --
+        + is_active(): bool
+        + is_admin(): bool
+        + is_student(): bool
+        + is_teacher(): bool
+    }
+
+    class Category <<dataclass>> {
+        + id: UUID
+        + name: str
+        + description: str?
+        + created_at: datetime
+    }
+
+    class Document <<dataclass>> {
+        + id: UUID
+        + title: str
+        + description: str
+        + file_path: str?
+        + file_type: DocumentType
+        + file_size: int
+        + original_file_name: str?
+        + status: DocumentStatus
+        + uploaded_by: UUID? @User
+        + reviewed_by: UUID? @User
+        + category_id: UUID? @Category
+        + review_comment: str?
+        + created_at: datetime
+        + updated_at: datetime
+    }
+}
+
+' Relationships
+User "1" -- "*" Document : "uploads >"
+User "1" -- "*" Document : "reviews >"
+Category "1" -- "*" Document : "contains >"
+
+@enduml
