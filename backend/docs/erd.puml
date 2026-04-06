@@ -2,31 +2,6 @@
 hide circle
 skinparam linetype ortho
 
-enum UserRole {
-  ADMIN
-  TEACHER
-  STUDENT
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-}
-
-enum DocumentStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  ARCHIVED
-  DELETED
-}
-
-enum DocumentType {
-  PDF
-  DOCX
-}
-
 entity "User" as User {
   + id : UUID <<PK>>
   --
@@ -70,8 +45,8 @@ entity "Document" as Document {
 
 ' Relationships
 
-User "1" -- "0..*" Document : "Uploaded by"
-User "1" -- "0..*" Document : "Reviewed by"
-Category "1" -- "0..*" Document : "Belongs to"
+User "1" -- "0..*" Document
+User "1" -- "0..*" Document
+Category "1" -- "0..*" Document
 
 @enduml
