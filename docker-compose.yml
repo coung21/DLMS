@@ -26,8 +26,8 @@ services:
     container_name: dlms-minio
     restart: always
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:-minioadmin}
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
@@ -37,7 +37,7 @@ services:
     networks:
       - dlms-network
     healthcheck:
-      test: ["CMD", "true"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -53,7 +53,7 @@ services:
       - dlms-network
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc config host add minio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc config host add minio http://minio:9000 ${STORAGE_ACCESS_KEY:-minioadmin} ${STORAGE_SECRET_KEY:-minioadmin};
       /usr/bin/mc mb minio/dlms-documents --ignore-existing;
       /usr/bin/mc anonymous set public minio/dlms-documents || true;
       exit 0;
@@ -80,25 +80,7 @@ services:
     volumes:
       - ./backend/logs:/app/logs
 
-  # Backend CI – dùng chung image, override CMD để chạy test/lint
-  backend-ci:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    entrypoint: [ "sh", "-c" ] # override CMD gốc (alembic + uvicorn)
-    env_file:
-      - ./backend/.env
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-dlms-db}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - dlms-network
-    profiles:
-      - ci # Chỉ chạy khi gọi --profile ci, không ảnh hưởng docker compose up thường
-
-  # FrontEnd React + Vite
+  # FrontEnd React + Vite (Dùng Nginx cho Production)
   frontend:
     build:
       context: ./frontend
@@ -106,14 +88,11 @@ services:
     container_name: dlms-frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "80:80"
     depends_on:
       - backend
     networks:
       - dlms-network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
 
 networks:
   dlms-network:
