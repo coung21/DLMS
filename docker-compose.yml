@@ -37,8 +37,7 @@ services:
     networks:
       - dlms-network
     healthcheck:
-      # Thay đổi healthcheck sướng máy hơn: chỉ kiểm tra cổng 9000 có mở hay không
-      test: [ "CMD-SHELL", "bash -c ':> /dev/tcp/localhost/9000' || exit 1" ]
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/localhost/9000' || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -73,8 +72,7 @@ services:
         condition: service_healthy
     networks:
       - dlms-network
-    volumes:
-      - ./backend/logs:/app/logs
+    # Đã gỡ bỏ volume logs để tránh lỗi Permission denied
 
   # FrontEnd React + Vite (Dùng Nginx cho Production)
   frontend:
@@ -87,6 +85,15 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - dlms-network
+
+  # Cloudflare Tunnel - "Cây cầu" đi ra Internet
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: dlms-tunnel
+    restart: always
+    command: tunnel --url http://frontend:80
     networks:
       - dlms-network
 
