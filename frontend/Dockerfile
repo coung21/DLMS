@@ -1,18 +1,26 @@
-FROM node:22-alpine
+# Stage 1: Build stage
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-# Copy package.json và package-lock.json (nếu có)
+# Cài đặt dependencies (tận dụng layer cache)
 COPY package*.json ./
-
-# Cài đặt dependencies
 RUN npm install
 
-# Copy toàn bộ mã nguồn frontend
+# Build mã nguồn
 COPY . .
+# Chạy build để tạo thư mục dist chứa các file tĩnh
+RUN npm run build
 
-# Port mặc định của Vite
-EXPOSE 5173
+# Stage 2: Serve stage với Nginx
+FROM nginx:stable-alpine
 
-# Chạy Vite dev server (thêm --host để expose ra mạng Docker)
-CMD ["npm", "run", "dev", "--", "--host"]
+# Copy thư mục dist đã được build ở stage trước vào thư mục tài liệu của Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Cung cấp file cấu hình nginx riêng để hỗ trợ Single Page Application (SPA)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
