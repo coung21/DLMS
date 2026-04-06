@@ -167,7 +167,8 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
         <div className="flex gap-2">
           {document.file_path ? (
             <>
-              <button
+              {/* Nút Download tạm thời bị vô hiệu hoá để tránh lỗi Mixed Content */}
+              {/* <button
                 onClick={handleDownload}
                 disabled={isDownloading || isOpening}
                 title="Tải tệp"
@@ -192,7 +193,7 @@ const DocumentCard = ({ document }: { document: DocumentItem }) => {
                     <line x1="12" x2="12" y1="15" y2="3" />
                   </svg>
                 )}
-              </button>
+              </button> */}
               <button
                 onClick={handleOpenPreview}
                 disabled={isOpening || isDownloading}
